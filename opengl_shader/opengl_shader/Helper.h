@@ -35,10 +35,6 @@ public:
 	static std::string GetShaderSourceFromRessource(const std::string& filename);
 #endif
 
-	static void ShaderCompilationTest(GLint vertexShader);
-	static void ProgramShaderLinkedTest(GLint program, GLint vertexShader, GLint fragmentShader);
-	static std::string ReadShaderFile(const char* shader);
-
 	static glm::vec3 HSVtoRGB(const glm::vec3& hsv)
 	{
 		int i;

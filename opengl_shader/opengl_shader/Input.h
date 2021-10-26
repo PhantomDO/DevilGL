@@ -57,19 +57,19 @@ public:
 
 		int width, height;
 		glfwGetWindowSize(pWindow, &width, &height);
-		window_data.FovY += static_cast<float>(y);
-		if(window_data.FovY < 1.0f) window_data.FovY = 1.0f;
-		if(window_data.FovY > 180.0f) window_data.FovY = 180.0f;
+		window_data.SetFovY(window_data.GetFovY() + static_cast<float>(y));
+		if(window_data.GetFovY() < 1.0f) window_data.SetFovY(1.0f);
+		if(window_data.GetFovY() > 180.0f) window_data.SetFovY(180.0f);
 
-		glm::mat4 projection = glm::perspective(glm::radians(window_data.FovY), 
+		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), 
 			static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
 
-		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.ProgramID, "proj");
-		glUseProgram(window_data.ProgramID);
+		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgramID(), "proj");
+		glUseProgram(window_data.GetMeshProgramID());
 		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 
-		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.LightProgramID, "proj");
-		glUseProgram(window_data.LightProgramID);
+		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgramID(), "proj");
+		glUseProgram(window_data.GetLightProgramID());
 		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 	}
 
@@ -81,14 +81,14 @@ public:
 
 		glViewport(0, 0, width, height);
 
-		glm::mat4 projection = glm::perspective(glm::radians(window_data.FovY), static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
 
-		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.ProgramID, "proj");
-		glUseProgram(window_data.ProgramID);
+		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgramID(), "proj");
+		glUseProgram(window_data.GetMeshProgramID());
 		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 
-		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.LightProgramID, "proj");
-		glUseProgram(window_data.LightProgramID);
+		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgramID(), "proj");
+		glUseProgram(window_data.GetLightProgramID());
 		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 	}
 };
