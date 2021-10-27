@@ -64,12 +64,12 @@ public:
 		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), 
 			static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
 
-		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgramID(), "proj");
-		glUseProgram(window_data.GetMeshProgramID());
+		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
+		window_data.GetMeshProgram().Use();
 		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 
-		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgramID(), "proj");
-		glUseProgram(window_data.GetLightProgramID());
+		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
+		window_data.GetLightProgram().Use();
 		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 	}
 
@@ -83,12 +83,12 @@ public:
 
 		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
 
-		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgramID(), "proj");
-		glUseProgram(window_data.GetMeshProgramID());
+		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
+		window_data.GetMeshProgram().Use();
 		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 
-		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgramID(), "proj");
-		glUseProgram(window_data.GetLightProgramID());
+		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
+		window_data.GetLightProgram().Use();
 		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 	}
 };

@@ -40,20 +40,10 @@ int main( int argc, char * argv[])
 	// mesh
 	Mesh mesh = Mesh("./models/duck.obj");
 
-	const auto triangleVertexShader = ShaderProgram(Shader{ GL_VERTEX_SHADER, "TriangleVertexShader.glsl" });
-	const auto triangleFragmentShader = ShaderProgram(Shader{ GL_FRAGMENT_SHADER, "TriangleFragmentShader.glsl" });
-		
-	// Creation du program
-	window->SetMeshProgramID(glCreateProgram());
-	glAttachShader(window->GetMeshProgramID(), triangleVertexShader.GetProgramID());
-	glAttachShader(window->GetMeshProgramID(), triangleFragmentShader.GetProgramID());
-	glLinkProgram(window->GetMeshProgramID());
-
-	// test de link du program avec les shader
-	ShaderProgram::ProgramShaderLinkedTest(window->GetMeshProgramID(), 
-		triangleVertexShader.GetProgramID(), 
-		triangleFragmentShader.GetProgramID());
-		
+	window->SetMeshProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "TriangleVertexShader.glsl" }, 
+		Shader{ GL_FRAGMENT_SHADER, "TriangleFragmentShader.glsl" }));
+			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
 	/// pointeur sur la position de la souris
@@ -71,11 +61,9 @@ int main( int argc, char * argv[])
 		glfwPollEvents();
 		// remet la couleur par default
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glUseProgram(window->GetMeshProgramID());
 
-		glBindVertexArray(mesh.GetVAO());
-		glMultiDrawElements(GL_POINTS, mesh.GetIndices(), GL_UNSIGNED_INT, (const GLvoid**)0, 1);
+		window->GetMeshProgram().Use();
+		mesh.Draw(window->GetMeshProgram());
 
 		glfwSwapBuffers(window->GetWindowPtr());
 	}

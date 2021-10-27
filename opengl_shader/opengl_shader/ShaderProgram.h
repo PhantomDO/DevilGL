@@ -7,27 +7,19 @@
 class ShaderProgram
 {
 public:
-	ShaderProgram(const Shader& shader)
-	{
-		std::cout << ReadShaderFile(shader.path.c_str()) << std::endl;
 
-		m_ProgramID = glCreateShader(shader.type);
-		m_ShaderSource = const_cast<GLchar*>((shader.path).c_str());
-		glShaderSource(m_ProgramID, 1, &m_ShaderSource, nullptr);
-		glCompileShader(m_ProgramID);
-
-		ShaderCompilationTest(m_ProgramID);
-	}
-
-	static void ProgramShaderLinkedTest(GLint program, GLint vertexShader, GLint fragmentShader);
+	ShaderProgram() = default;
+	ShaderProgram(const Shader& vertex, const Shader& fragment);
+	GLint GetID() const { return m_ID; }
+	void Use() { glUseProgram(m_ID); }
 
 public:
-	GLint GetProgramID() const { return m_ProgramID; }
 
-	void ShaderCompilationTest(GLint vertexShader);	
-	std::string ReadShaderFile(const char* shader);
+	static std::string ReadShaderFile(const char* shader);
+	static void ShaderCompilationTest(const GLuint& vertexShader);	
+	static void ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
+	
 private:
 
-	GLint m_ProgramID;
-	GLchar* m_ShaderSource;
+	GLint m_ID;
 };

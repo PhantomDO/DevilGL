@@ -19,26 +19,35 @@ Mesh::Mesh(const std::string& path)
 	//Allocation des buffers
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_EBO);
 	
 	//Spécification des vertices pour le mesh
 	glBindVertexArray(m_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(glm::vec3), &m_Vertices.front(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices.front(), GL_STATIC_DRAW);
 
 	//spécifie l'organisation de l'entrée du vertex shader
 	//Positions
-	glVertexAttribPointer(0, m_Vertices.size(), GL_FLOAT, GL_FALSE, GetStrides(), reinterpret_cast<GLvoid*>(0 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(0));
 	//normales
-	glVertexAttribPointer(1, m_Normals.size(), GL_FLOAT, GL_FALSE, GetStrides(), reinterpret_cast<GLvoid*>(m_Vertices.size() * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(offsetof(Vertex, Normal)));
 	//Coordonnées de textures
-	glVertexAttribPointer(2, m_UVs.size(), GL_FLOAT, GL_FALSE, GetStrides(), reinterpret_cast<GLvoid*>(m_Vertices.size() + m_Normals.size() * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(offsetof(Vertex, UV)));
+		
+	glBindVertexArray(0);
+}
 
-	glGenBuffers(1, &m_EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::vec<3, int, glm::defaultp>) * m_Triangles.size() * sizeof(GLuint), &m_EBO, GL_STATIC_DRAW);
+void Mesh::Draw(const ShaderProgram& shader) const
+{
+	glBindVertexArray(m_VAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
 struct FaceVert
@@ -71,10 +80,9 @@ bool Mesh::LoadFromFile(const std::string& path)
 		return false;
 	}
 
-	m_Vertices.clear();
-	m_Normals.clear();
-	m_UVs.clear();
-	m_Triangles.clear();
+	vertices.clear();
+	indices.clear();
+	textures.clear();
 
 	std::vector<glm::vec3> tmpVertices;
 	std::vector<glm::vec3> tmpNormals;
@@ -97,9 +105,9 @@ bool Mesh::LoadFromFile(const std::string& path)
 			iss >> trash;
 			glm::vec3 vertex;
 			float w = 1.f;
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; i <= 3; i++)
 			{
-				if (i == 4 && iss >> w)
+				if (i == 3 /*&& iss >> w*/)
 				{
 					iss >> w;
 				}
@@ -135,9 +143,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 			std::vector<int32_t> vertexIndices;
 			std::vector<int32_t> normalIndices;
 			std::vector<int32_t> uvIndices;
-
-			glm::vec<3, int, glm::defaultp> face;
-			
+						
 			int vCount = 0, nCount = 0, uvCount = 0;
 			auto subLine= line.substr(2);
 			const char* linePtr = subLine.c_str();
@@ -179,43 +185,60 @@ bool Mesh::LoadFromFile(const std::string& path)
 				if (!uvIndices.empty()) tri.normal = uvIndices[0];
 
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				face[0] = uniqueVertices[tri];
+				indices.push_back(uniqueVertices[tri]);
 								
 				tri.vertex = vertexIndices[i];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i];
 				if (!uvIndices.empty()) tri.normal = uvIndices[i];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				face[1] = uniqueVertices[tri];
+				indices.push_back(uniqueVertices[tri]);
 
 				tri.vertex = vertexIndices[i + 1];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i + 1];
 				if (!uvIndices.empty()) tri.normal = uvIndices[i + 1];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				face[2] = uniqueVertices[tri];
-
-				for (int i = 0; i < 3; i++)
-				{
-					m_Triangles.push_back(face[i]);
-				}
+				indices.push_back(uniqueVertices[tri]);
 			}
 		}
 	}
 
 	in.close();
 
-	m_Vertices.resize(vertexCount);
-	if (!m_Normals.empty()) m_Normals.resize(vertexCount);
-	if (!m_UVs.empty()) m_UVs.resize(vertexCount);
-
+	vertices.resize(vertexCount);
 	std::map<FaceVert, int, VertexLess>::iterator iter;
 	for (iter = uniqueVertices.begin(); iter != uniqueVertices.end(); ++iter)
 	{
-		m_Vertices[iter->second] = tmpVertices[iter->first.vertex];		
-		if (!m_Normals.empty()) m_Normals[iter->second] = tmpNormals[iter->first.normal];
-		if (!m_UVs.empty()) m_UVs[iter->second] = tmpUvs[iter->first.uv];
+		vertices[iter->second] = {
+			tmpVertices[iter->first.vertex], 
+			iter->first.normal != -1 ? tmpNormals[iter->first.normal] : glm::vec3(), 
+			iter->first.uv != -1 ? tmpUvs[iter->first.uv] : glm::vec2()
+		};
 	}
+
+	glm::vec3 min, max;
+	if (!vertices.empty())
+	{
+		min = max = vertices[0].Position;
+		for (uint32_t i = 1; i < vertices.size(); ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				min[j] = std::min(min[j], vertices[i].Position[j]);			
+				max[j] = std::max(max[j], vertices[i].Position[j]);			
+			}
+		}
+	}
+	else
+	{
+		std::cerr << "Vertices Array size is less or equal to 0" << std::endl;
+	}
+
+	glm::vec3 size = max - min;
+	glm::vec3 center = min + glm::normalize(size) * (glm::length(size) / 2);
+	bounds = Bounds(center, size);
 
 	return true;
 }
+

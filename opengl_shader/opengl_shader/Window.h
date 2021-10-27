@@ -1,6 +1,10 @@
 ﻿#pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
+#include "ShaderProgram.h"
 
 class Window
 {
@@ -8,13 +12,16 @@ public:
 	float GetFovY() const { return m_FovY; }
 	void SetFovY(const float& yFov) { m_FovY = yFov; }
 
-	GLuint GetMeshProgramID() const { return m_MeshProgramID; }
-	void SetMeshProgramID(const GLuint& meshProgramID) { m_MeshProgramID = meshProgramID; }
+	ShaderProgram GetMeshProgram() const { return m_MeshProgram; }
+	void SetMeshProgram(const ShaderProgram& meshProgram) { m_MeshProgram = meshProgram; }
 	
-	GLuint GetLightProgramID() const { return m_LightProgramID; }
-	void SetLightProgramID(const GLuint& lightProgramID) { m_LightProgramID = lightProgramID; }
+	ShaderProgram GetLightProgram() const { return m_LightProgram; }
+	void SetLightProgram(const ShaderProgram& lightProgram) { m_LightProgram = lightProgram; }
 
 	GLFWwindow* GetWindowPtr() const { return m_Window; }
+
+	glm::mat4 GetViewMatrix() const { return m_ViewMatrix; }
+	void SetViewMatrix();
 	
 public:
 	
@@ -23,7 +30,10 @@ public:
 private:
 
 	float m_FovY = 45.f;
-	GLuint m_MeshProgramID;
-	GLuint m_LightProgramID;
+
+	glm::mat4 m_ViewMatrix;
+
+	ShaderProgram m_MeshProgram;
+	ShaderProgram m_LightProgram;
 	GLFWwindow* m_Window;
 };

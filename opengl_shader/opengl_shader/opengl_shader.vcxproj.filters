@@ -48,6 +48,9 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Bounds.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -71,12 +74,15 @@
     <ClInclude Include="Mesh.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Bounds.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="TriangleVertexShader.glsl">
+    <None Include="MeshVertexShader.glsl">
       <Filter>Fichiers shader\Vertex</Filter>
     </None>
-    <None Include="TriangleFragmentShader.glsl">
+    <None Include="MeshFragmentShader.glsl">
       <Filter>Fichiers shader\Fragment</Filter>
     </None>
   </ItemGroup>

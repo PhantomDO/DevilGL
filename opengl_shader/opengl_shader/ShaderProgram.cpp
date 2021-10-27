@@ -6,7 +6,7 @@
 #include <vector>
 
 
-void ShaderProgram::ShaderCompilationTest(GLint vertexShader)
+void ShaderProgram::ShaderCompilationTest(const GLuint& vertexShader)
 {
 	GLint isCompiled;
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
@@ -24,7 +24,7 @@ void ShaderProgram::ShaderCompilationTest(GLint vertexShader)
 	}
 }
 
-void ShaderProgram::ProgramShaderLinkedTest(GLint program, GLint vertexShader, GLint fragmentShader)
+void ShaderProgram::ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader)
 {
 	GLint isLinked = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
@@ -39,6 +39,32 @@ void ShaderProgram::ProgramShaderLinkedTest(GLint program, GLint vertexShader, G
 	}
 }
 
+ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
+{
+	std::cout << ReadShaderFile(vertex.path.c_str()) << std::endl;
+	const GLuint vertexShader = glCreateShader(vertex.type);
+	const auto vertexSource = const_cast<GLchar*>((vertex.path).c_str());
+	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
+	glCompileShader(vertexShader);
+	ShaderCompilationTest(vertexShader);
+
+	std::cout << ReadShaderFile(fragment.path.c_str()) << std::endl;
+	const GLuint fragmentShader = glCreateShader(fragment.type);
+	const auto fragmentSource = const_cast<GLchar*>((fragment.path).c_str());
+	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
+	glCompileShader(fragmentShader);
+	ShaderCompilationTest(fragmentShader);
+
+	m_ID = glCreateProgram();
+	glAttachShader(m_ID, vertexShader);
+	glAttachShader(m_ID, fragmentShader);
+	glLinkProgram(m_ID);
+	ProgramShaderLinkedTest(m_ID, vertexShader, fragmentShader);
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+}
+
 std::string ShaderProgram::ReadShaderFile(const char* shader)
 {
 	// lis le fichier 
@@ -47,11 +73,11 @@ std::string ShaderProgram::ReadShaderFile(const char* shader)
 
 	size_t size = file.gcount();
 
-	// remet les caract�re au d�part du fichier
+	// remet les caractere au depart du fichier
 	file.clear();
 	file.seekg(0, std::ios_base::beg);
 
-	// copie les caract�re dans le string stream
+	// copie les caractere dans le string stream
 	std::stringstream sstr;
 	sstr << file.rdbuf();
 	file.close();
