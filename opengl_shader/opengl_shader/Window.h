@@ -4,13 +4,12 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "Camera.h"
 #include "ShaderProgram.h"
 
 class Window
 {
 public:
-	float GetFovY() const { return m_FovY; }
-	void SetFovY(const float& yFov) { m_FovY = yFov; }
 
 	ShaderProgram GetMeshProgram() const { return m_MeshProgram; }
 	void SetMeshProgram(const ShaderProgram& meshProgram) { m_MeshProgram = meshProgram; }
@@ -34,10 +33,10 @@ public:
 public:
 	
 	Window(const int& width, const int& height);
+	Camera mainCamera;
 
 private:
 
-	float m_FovY = 45.f;
 	int m_Width, m_Height;
 
 	glm::mat4 m_MVPMatrix;

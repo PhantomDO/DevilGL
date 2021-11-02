@@ -48,7 +48,7 @@ Mesh::Mesh(const std::string& path)
 void Mesh::Draw(const ShaderProgram& shader) const
 {
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 

@@ -9,7 +9,7 @@
 
 void Window::SetProjectionMatrix(const float& nearClip = 0.1f, const float& farClip = 100.0f)
 {
-	m_ProjectionMatrix = glm::perspective(glm::radians(m_FovY), 
+	m_ProjectionMatrix = glm::perspective(glm::radians(mainCamera.fov), 
 		static_cast<float>(m_Width) / static_cast<float>(m_Height), 
 		nearClip, farClip);
 

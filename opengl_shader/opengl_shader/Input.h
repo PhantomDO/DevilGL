@@ -23,30 +23,39 @@ public:
 	static void GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
 	{
 		if(action == GLFW_RELEASE) return;
-
-		auto color = *(reinterpret_cast<glm::vec3*>(glfwGetWindowUserPointer(pWindow)));
-		float hValue = color.r;
+		
+		auto window = *(static_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
+		glm::vec3 camPos = window.mainCamera.transform.position;
 
 		// Trouver l'utilité
 		switch (key)
 		{
-		case GLFW_KEY_DOWN:
-			hValue -= 1.0f;
-			if (hValue < 0.0f) hValue = 359.0f;
-			color = Helper::HSVtoRGB(glm::vec3(hValue, color.g, color.b));
+		/*case GLFW_KEY_DOWN:
+			window.mainCamera.transform.position -= glm::vec3(0, 1.0f, 0);
+			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
+			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
 			break;
 		case GLFW_KEY_UP:
-			hValue += 1.0f;
-			if (hValue > 360.0f) hValue = 0.0f;
-			color = Helper::HSVtoRGB(glm::vec3(hValue, color.g, color.b));
+			window.GetCamera().transform.position += glm::vec3(0, 1.0f, 0);
+			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
+			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
 			break;
+		case GLFW_KEY_LEFT:
+			window.GetCamera().transform.position -= glm::vec3(1.0f, 0, 0);
+			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
+			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
+			break;
+		case GLFW_KEY_RIGHT:
+			window.GetCamera().transform.position += glm::vec3(1.0f, 0, 0);
+			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
+			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
+			break;*/
 		case GLFW_KEY_W:
 			GLint modes[2];
 			glGetIntegerv(GL_POLYGON_MODE, modes);
 			modes[0] = modes[0] == GL_LINE ? GL_FILL : GL_LINE;
 			glPolygonMode(GL_FRONT_AND_BACK, modes[0]);
-			break;
-		default:
+			std::cerr << "glPolygonMode: " << modes[0] << ", " << modes[1] << std::endl;
 			break;
 		}
 	}
@@ -57,20 +66,17 @@ public:
 
 		int width, height;
 		glfwGetWindowSize(pWindow, &width, &height);
-		window_data.SetFovY(window_data.GetFovY() + static_cast<float>(y));
-		if(window_data.GetFovY() < 1.0f) window_data.SetFovY(1.0f);
-		if(window_data.GetFovY() > 180.0f) window_data.SetFovY(180.0f);
-
-		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), 
-			static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
+		window_data.mainCamera.fov += static_cast<float>(y);
+		if(window_data.mainCamera.fov < 1.0f) window_data.mainCamera.fov = 1.0f;
+		if(window_data.mainCamera.fov > 180.0f) window_data.mainCamera.fov = 180.0f;
 
 		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
 		window_data.GetMeshProgram().Use();
-		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
 
 		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
 		window_data.GetLightProgram().Use();
-		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
 	}
 
 	static void GetSize(GLFWwindow* pWindow, int width, int height)
@@ -80,15 +86,13 @@ public:
 		const Window& window_data = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
 
 		glViewport(0, 0, width, height);
-
-		glm::mat4 projection = glm::perspective(glm::radians(window_data.GetFovY()), static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
-
+		
 		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
 		window_data.GetMeshProgram().Use();
-		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
 
 		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
 		window_data.GetLightProgram().Use();
-		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
 	}
 };

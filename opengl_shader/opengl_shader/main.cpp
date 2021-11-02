@@ -56,8 +56,15 @@ int main( int argc, char * argv[])
 	//// change la couleur de la fenetre
 	glClearColor(1.f, 0.08f, 0.58f, 1.f);
 
-	const GLuint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
-	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &window->GetMVPMatrix()[0][0]);
+	const GLint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
+	glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(window->GetMVPMatrix()));
+
+	// pointeur sur la camera de la fenetre
+	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
+	// pointeur sur la mouse wheel
+	glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
+	// pointeur sur les touche du claver
+	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
