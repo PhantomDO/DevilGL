@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 
+#include "Helper.h"
+
 
 bool ShaderProgram::ShaderCompilationTest(const GLuint& shader)
 {
@@ -46,11 +48,11 @@ bool ShaderProgram::ProgramShaderLinkedTest(const GLint& program, const GLuint& 
 	return true;
 }
 
-std::string ShaderProgram::ReadShaderFile(const char* shader)
+std::string ShaderProgram::ReadShaderFile(const std::string& shader)
 {
 	// lis le fichier 
 	std::ifstream file(shader);
-	if (!file) return std::string();
+	if (!file) return std::string{};
 
 	size_t size = file.gcount();
 
@@ -63,32 +65,34 @@ std::string ShaderProgram::ReadShaderFile(const char* shader)
 	sstr << file.rdbuf();
 	file.close();
 
-	// renvoie une string du string stream pass�
+	// renvoie une string du string stream passe
 	return sstr.str();
 }
 
 ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
 {
-	const auto vertexSource = const_cast<GLchar*>((vertex.path).c_str());
-	std::cout << ReadShaderFile(vertexSource) << std::endl;
+	const auto vertexCode = ReadShaderFile(vertex.path);
+	const auto vertexSource = const_cast<GLchar*>(vertexCode.c_str());
+	std::cout << vertexSource << std::endl;
 	const GLuint vertexShader = glCreateShader(vertex.type);
 	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertexShader);
 	if (!ShaderCompilationTest(vertexShader))
 	{
 		glDeleteShader(vertexShader);
-		std::cerr << "Error when compiling vertex shader" << std::endl;
+		Helper::Terminate("Error when compiling vertex shader");
 	}
-	
-	const auto fragmentSource = const_cast<GLchar*>((fragment.path).c_str());
-	std::cout << ReadShaderFile(fragmentSource) << std::endl;
+
+	const auto fragmentCode = ReadShaderFile(fragment.path);
+	const auto fragmentSource = const_cast<GLchar*>(fragmentCode.c_str());
+	std::cout << fragmentSource << std::endl;
 	const GLuint fragmentShader = glCreateShader(fragment.type);
 	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
 	glCompileShader(fragmentShader);
 	if (!ShaderCompilationTest(fragmentShader))
 	{
 		glDeleteShader(fragmentShader);
-		std::cerr << "Error when compiling fragment shader" << std::endl;
+		Helper::Terminate("Error when compiling fragment shader");
 	}
 
 	m_ID = glCreateProgram();
@@ -98,11 +102,9 @@ ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
 	if (!ProgramShaderLinkedTest(m_ID, vertexShader, fragmentShader))
 	{
 		glDeleteProgram(m_ID);
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragmentShader);
-		std::cerr << "Error when compiling program" << std::endl;
+		Helper::Terminate("Error when compiling program");
 	}
-	
-	glDetachShader(m_ID, vertexShader);
-	glDetachShader(m_ID, fragmentShader);
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 }

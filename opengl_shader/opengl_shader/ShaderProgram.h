@@ -15,7 +15,8 @@ public:
 
 public:
 
-	static std::string ReadShaderFile(const char* shader);
+	static std::string ReadShaderFile(const std::string& shader);
+
 	static bool ShaderCompilationTest(const GLuint& shader);	
 	static bool ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
 	
