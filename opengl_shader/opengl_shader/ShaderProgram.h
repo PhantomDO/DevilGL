@@ -11,13 +11,13 @@ public:
 	ShaderProgram() = default;
 	ShaderProgram(const Shader& vertex, const Shader& fragment);
 	GLint GetID() const { return m_ID; }
-	void Use() { glUseProgram(m_ID); }
+	void Use() const { glUseProgram(m_ID); }
 
 public:
 
 	static std::string ReadShaderFile(const char* shader);
-	static void ShaderCompilationTest(const GLuint& vertexShader);	
-	static void ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
+	static bool ShaderCompilationTest(const GLuint& shader);	
+	static bool ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
 	
 private:
 

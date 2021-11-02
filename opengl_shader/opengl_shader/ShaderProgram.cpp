@@ -6,25 +6,30 @@
 #include <vector>
 
 
-void ShaderProgram::ShaderCompilationTest(const GLuint& vertexShader)
+bool ShaderProgram::ShaderCompilationTest(const GLuint& shader)
 {
-	GLint isCompiled;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &isCompiled);
+	GLint isCompiled = GL_FALSE;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
 	if (isCompiled == GL_FALSE)
 	{
 		GLint maxLength = 0;
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
 		// The maxLength includes the NULL character
 		std::vector<GLchar> infoLog(maxLength);
-		glGetShaderInfoLog(vertexShader, maxLength, &maxLength, &infoLog[0]);
+		glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
 
-		for (auto& i : infoLog)
+		for (const auto& i : infoLog)
 			std::cout << i;
+
+		return false;
 	}
+
+	return true;
 }
 
-void ShaderProgram::ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader)
+bool ShaderProgram::ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader,
+                                            const GLuint& fragmentShader)
 {
 	GLint isLinked = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
@@ -36,33 +41,9 @@ void ShaderProgram::ProgramShaderLinkedTest(const GLint& program, const GLuint& 
 		// The maxLength includes the NULL character
 		std::vector<GLchar> infoLog(maxLength);
 		glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		return false;
 	}
-}
-
-ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
-{
-	std::cout << ReadShaderFile(vertex.path.c_str()) << std::endl;
-	const GLuint vertexShader = glCreateShader(vertex.type);
-	const auto vertexSource = const_cast<GLchar*>((vertex.path).c_str());
-	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
-	glCompileShader(vertexShader);
-	ShaderCompilationTest(vertexShader);
-
-	std::cout << ReadShaderFile(fragment.path.c_str()) << std::endl;
-	const GLuint fragmentShader = glCreateShader(fragment.type);
-	const auto fragmentSource = const_cast<GLchar*>((fragment.path).c_str());
-	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
-	glCompileShader(fragmentShader);
-	ShaderCompilationTest(fragmentShader);
-
-	m_ID = glCreateProgram();
-	glAttachShader(m_ID, vertexShader);
-	glAttachShader(m_ID, fragmentShader);
-	glLinkProgram(m_ID);
-	ProgramShaderLinkedTest(m_ID, vertexShader, fragmentShader);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	return true;
 }
 
 std::string ShaderProgram::ReadShaderFile(const char* shader)
@@ -84,4 +65,44 @@ std::string ShaderProgram::ReadShaderFile(const char* shader)
 
 	// renvoie une string du string stream pass�
 	return sstr.str();
+}
+
+ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
+{
+	const auto vertexSource = const_cast<GLchar*>((vertex.path).c_str());
+	std::cout << ReadShaderFile(vertexSource) << std::endl;
+	const GLuint vertexShader = glCreateShader(vertex.type);
+	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
+	glCompileShader(vertexShader);
+	if (!ShaderCompilationTest(vertexShader))
+	{
+		glDeleteShader(vertexShader);
+		std::cerr << "Error when compiling vertex shader" << std::endl;
+	}
+	
+	const auto fragmentSource = const_cast<GLchar*>((fragment.path).c_str());
+	std::cout << ReadShaderFile(fragmentSource) << std::endl;
+	const GLuint fragmentShader = glCreateShader(fragment.type);
+	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
+	glCompileShader(fragmentShader);
+	if (!ShaderCompilationTest(fragmentShader))
+	{
+		glDeleteShader(fragmentShader);
+		std::cerr << "Error when compiling fragment shader" << std::endl;
+	}
+
+	m_ID = glCreateProgram();
+	glAttachShader(m_ID, vertexShader);
+	glAttachShader(m_ID, fragmentShader);
+	glLinkProgram(m_ID);
+	if (!ProgramShaderLinkedTest(m_ID, vertexShader, fragmentShader))
+	{
+		glDeleteProgram(m_ID);
+		glDeleteShader(vertexShader);
+		glDeleteShader(fragmentShader);
+		std::cerr << "Error when compiling program" << std::endl;
+	}
+	
+	glDetachShader(m_ID, vertexShader);
+	glDetachShader(m_ID, fragmentShader);
 }

@@ -41,8 +41,8 @@ int main( int argc, char * argv[])
 	Mesh mesh = Mesh("./models/duck.obj");
 
 	window->SetMeshProgram(ShaderProgram(
-		Shader{ GL_VERTEX_SHADER, "TriangleVertexShader.glsl" }, 
-		Shader{ GL_FRAGMENT_SHADER, "TriangleFragmentShader.glsl" }));
+		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" }, 
+		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
@@ -55,6 +55,9 @@ int main( int argc, char * argv[])
 	glfwSetTime(0);	
 	//// change la couleur de la fenetre
 	glClearColor(1.f, 0.08f, 0.58f, 1.f);
+
+	const GLuint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
+	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &window->GetMVPMatrix()[0][0]);
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
