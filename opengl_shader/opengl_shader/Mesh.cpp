@@ -1,5 +1,6 @@
 ﻿#include "Mesh.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -16,11 +17,42 @@ Mesh::Mesh(const std::string& path)
 		Helper::Terminate("Can't load obj");
 	}
 
+	Setup();
+	
+	std::cerr << "Mesh loaded." << std::endl;
+}
+
+Mesh::Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices)
+{
+	for (int i = 0; i < vertices.size(); i += 3)
+	{
+		this->vertices.push_back(Vertex{
+			glm::vec3(vertices[i + 0], vertices[i + 1], vertices[i + 2]), 
+			glm::vec3(0),
+			glm::vec3(0) });
+	}
+
+	this->indices = indices;
+
+	Setup();
+
+	std::cerr << "Mesh loaded." << std::endl;
+}
+
+Mesh::~Mesh()
+{
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+}
+
+void Mesh::Setup()
+{
 	//Allocation des buffers
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
 	glGenBuffers(1, &m_EBO);
-	
+
 	//Spécification des vertices pour le mesh
 	glBindVertexArray(m_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
@@ -39,16 +71,14 @@ Mesh::Mesh(const std::string& path)
 	//Coordonnées de textures
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(offsetof(Vertex, UV)));
-		
+
 	glBindVertexArray(0);
-	
-	std::cerr << "Mesh loaded." << std::endl;
 }
 
 void Mesh::Draw(const ShaderProgram& shader) const
 {
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
 	glBindVertexArray(0);
 }
 
@@ -142,11 +172,11 @@ bool Mesh::LoadFromFile(const std::string& path)
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
+			std::cout << line << std::endl;
 			std::vector<int32_t> vertexIndices;
 			std::vector<int32_t> normalIndices;
 			std::vector<int32_t> uvIndices;
-						
-			int vCount = 0, nCount = 0, uvCount = 0;
+
 			auto subLine= line.substr(2);
 			const char* linePtr = subLine.c_str();
 			while (linePtr[0] != 0)
@@ -178,8 +208,8 @@ bool Mesh::LoadFromFile(const std::string& path)
 
 				while(linePtr[0] != ' ' && linePtr[0] != 0) ++linePtr;
 			}
-
-			for (uint32_t i = 0; i < vertexIndices.size() - 1; ++i)
+			
+			for (uint32_t i = 1; i < vertexIndices.size() - 1; ++i)
 			{
 				FaceVert tri;
 				tri.vertex = vertexIndices[0];
@@ -187,37 +217,39 @@ bool Mesh::LoadFromFile(const std::string& path)
 				if (!uvIndices.empty()) tri.normal = uvIndices[0];
 
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri]);
+				indices.push_back(uniqueVertices[tri] + 1);
 								
 				tri.vertex = vertexIndices[i];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i];
 				if (!uvIndices.empty()) tri.normal = uvIndices[i];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri]);
+				indices.push_back(uniqueVertices[tri] + 1);
 
 				tri.vertex = vertexIndices[i + 1];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i + 1];
 				if (!uvIndices.empty()) tri.normal = uvIndices[i + 1];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri]);
+				indices.push_back(uniqueVertices[tri] + 1);
 			}
 		}
 	}
 
 	in.close();
-
+	
 	vertices.resize(vertexCount);
 	std::map<FaceVert, int, VertexLess>::iterator iter;
 	for (iter = uniqueVertices.begin(); iter != uniqueVertices.end(); ++iter)
 	{
 		vertices[iter->second] = {
 			tmpVertices[iter->first.vertex], 
-			iter->first.normal != -1 ? tmpNormals[iter->first.normal] : glm::vec3(), 
-			iter->first.uv != -1 ? tmpUvs[iter->first.uv] : glm::vec2()
+			iter->first.normal != -1 ? tmpNormals[iter->first.normal] : glm::vec3(0), 
+			iter->first.uv != -1 ? tmpUvs[iter->first.uv] : glm::vec2(0)
 		};
 	}
+
+	std::cerr << "# v# " << vertices.size() << " f# " << indices.size() / 3 << std::endl;
 
 	glm::vec3 min, max;
 	if (!vertices.empty())

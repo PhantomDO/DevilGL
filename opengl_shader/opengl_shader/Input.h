@@ -30,26 +30,22 @@ public:
 		// Trouver l'utilité
 		switch (key)
 		{
-		/*case GLFW_KEY_DOWN:
+		case GLFW_KEY_DOWN:
 			window.mainCamera.transform.position -= glm::vec3(0, 1.0f, 0);
-			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
-			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
+			window.mainCamera.SetViewMatrix();
 			break;
 		case GLFW_KEY_UP:
-			window.GetCamera().transform.position += glm::vec3(0, 1.0f, 0);
-			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
-			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
+			window.mainCamera.transform.position += glm::vec3(0, 1.0f, 0);
+			window.mainCamera.SetViewMatrix(); 
 			break;
 		case GLFW_KEY_LEFT:
-			window.GetCamera().transform.position -= glm::vec3(1.0f, 0, 0);
-			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
-			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
+			window.mainCamera.transform.position -= glm::vec3(1.0f, 0, 0);
+			window.mainCamera.SetViewMatrix();
 			break;
 		case GLFW_KEY_RIGHT:
-			window.GetCamera().transform.position += glm::vec3(1.0f, 0, 0);
-			core.GetMatrixs().ViewMatrix = glm::lookAt(cam.GetTransform().GetPosition(), tr.GetPosition(), cam.GetVec3Up());
-			glUniformMatrix4fv(core.GetUniformMatrixs().nViewMatrix, 1, GL_FALSE, glm::value_ptr(core.GetMatrixs().ViewMatrix));
-			break;*/
+			window.mainCamera.transform.position += glm::vec3(1.0f, 0, 0);
+			window.mainCamera.SetViewMatrix();
+			break;
 		case GLFW_KEY_W:
 			GLint modes[2];
 			glGetIntegerv(GL_POLYGON_MODE, modes);
@@ -72,11 +68,11 @@ public:
 
 		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
 		window_data.GetMeshProgram().Use();
-		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
+		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.mainCamera.GetProjectionMatrix()));
 
 		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
 		window_data.GetLightProgram().Use();
-		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
+		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.mainCamera.GetProjectionMatrix()));
 	}
 
 	static void GetSize(GLFWwindow* pWindow, int width, int height)
@@ -89,10 +85,10 @@ public:
 		
 		const GLint n_uniform_mesh_projection_matrix = glGetUniformLocation(window_data.GetMeshProgram().GetID(), "proj");
 		window_data.GetMeshProgram().Use();
-		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
+		glUniformMatrix4fv(n_uniform_mesh_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.mainCamera.GetProjectionMatrix()));
 
 		const GLint n_uniform_light_projection_matrix = glGetUniformLocation(window_data.GetLightProgram().GetID(), "proj");
 		window_data.GetLightProgram().Use();
-		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.GetProjectionMatrix()));
+		glUniformMatrix4fv(n_uniform_light_projection_matrix, 1, GL_FALSE, glm::value_ptr(window_data.mainCamera.GetProjectionMatrix()));
 	}
 };

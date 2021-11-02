@@ -28,7 +28,10 @@ class Mesh
 {
 public:
 	Mesh(const std::string& path);
+	Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices);
+	~Mesh();
 	bool LoadFromFile(const std::string& path);
+	void Setup();
 	void Draw(const ShaderProgram& shader) const;
 public:
 	

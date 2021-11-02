@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 class Transform
 {
@@ -7,6 +8,7 @@ public:
 	glm::vec3 position = glm::vec3(0);
 	glm::vec3 rotation = glm::vec3(0);
 	glm::vec3 scale = glm::vec3(1);
+	glm::mat4 matrix = glm::mat4(1.0f);
 
 	void SetPositionAndRotation(const glm::vec3& pos, const glm::vec3& rot)
 	{

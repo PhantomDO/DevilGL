@@ -7,11 +7,11 @@
 #include "ShaderProgram.h"
 #include "Window.h"
 
-#ifdef WIN32
+//#ifdef WIN32
 //This magic line is to force notebook computer that share NVidia and Intel graphics to use high performance GPU (NVidia).
 //Intel graphics doesn't support OpenGL > 1.2
 extern "C" _declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-#endif
+//#endif
 
 const GLfloat PI = 3.1415926535897932384626433832795f;
 
@@ -51,13 +51,14 @@ int main( int argc, char * argv[])
 
 	//// utilise le programe creer precedement
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 	glfwSetTime(0);	
 	//// change la couleur de la fenetre
 	glClearColor(1.f, 0.08f, 0.58f, 1.f);
 
 	const GLint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
-	glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(window->GetMVPMatrix()));
+	glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(window->mainCamera.GetMVPMatrix()));
 
 	// pointeur sur la camera de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
@@ -65,6 +66,7 @@ int main( int argc, char * argv[])
 	glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
 	// pointeur sur les touche du claver
 	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
+
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
@@ -74,10 +76,10 @@ int main( int argc, char * argv[])
 
 		window->GetMeshProgram().Use();
 		mesh.Draw(window->GetMeshProgram());
-
+		
 		glfwSwapBuffers(window->GetWindowPtr());
 	}
-	
+
 	glfwTerminate();
 
 	return 0;
