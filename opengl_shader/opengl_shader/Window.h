@@ -22,8 +22,8 @@ public:
 public:
 	
 	Window(const int& width, const int& height);
-	Camera mainCamera;
-
+	Camera camera;
+	
 private:
 
 	int m_Width, m_Height;

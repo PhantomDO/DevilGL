@@ -58,7 +58,6 @@ int main( int argc, char * argv[])
 	glClearColor(1.f, 0.08f, 0.58f, 1.f);
 
 	const GLint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
-	glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(window->mainCamera.GetMVPMatrix()));
 
 	// pointeur sur la camera de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
@@ -75,6 +74,8 @@ int main( int argc, char * argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		window->GetMeshProgram().Use();
+		glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
+			window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
 		mesh.Draw(window->GetMeshProgram());
 		
 		glfwSwapBuffers(window->GetWindowPtr());

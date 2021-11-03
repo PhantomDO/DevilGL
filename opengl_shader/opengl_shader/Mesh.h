@@ -7,6 +7,7 @@
 
 #include "Bounds.h"
 #include "ShaderProgram.h"
+#include "Transform.h"
 
 struct Vertex
 {
@@ -38,6 +39,12 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
 	std::vector<Texture> textures;
+	Transform transform;
+
+	glm::mat4 GetMVPMatrix(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& model = glm::mat4(1.0f))
+	{
+		return projection * view * model;
+	}
 
 	Bounds bounds;
 

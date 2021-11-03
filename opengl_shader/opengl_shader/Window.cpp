@@ -41,11 +41,12 @@ Window::Window(const int& width, const int& height)
 	
 	Helper::RendererInfo();
 
-	mainCamera = Camera(45, glm::vec3(0, 0, -10));
-	mainCamera.transform.rotation = glm::vec3(0, 0, 0);
-	mainCamera.SetProjectionMatrix(width, height);
-	mainCamera.SetViewMatrix();
-	mainCamera.SetModelMatrix();
+	camera = Camera();
+	camera.transform.position = glm::vec3(0, 0, 10);
+	camera.SetProjectionMatrix(width, height);
+	camera.SetViewMatrix();
+
+	std::cout << camera.transform << std::endl;
 
 	glViewport(0,0, m_Width, m_Height);
 

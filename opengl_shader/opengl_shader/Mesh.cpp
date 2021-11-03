@@ -17,6 +17,7 @@ Mesh::Mesh(const std::string& path)
 		Helper::Terminate("Can't load obj");
 	}
 
+	transform = Transform();
 	Setup();
 	
 	std::cerr << "Mesh loaded." << std::endl;
@@ -33,6 +34,7 @@ Mesh::Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indi
 	}
 
 	this->indices = indices;
+	transform = Transform();
 
 	Setup();
 
@@ -172,7 +174,6 @@ bool Mesh::LoadFromFile(const std::string& path)
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
-			std::cout << line << std::endl;
 			std::vector<int32_t> vertexIndices;
 			std::vector<int32_t> normalIndices;
 			std::vector<int32_t> uvIndices;
