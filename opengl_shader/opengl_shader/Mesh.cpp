@@ -141,14 +141,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 			float w = 1.f;
 			for (int i = 0; i <= 3; i++)
 			{
-				if (i == 3 /*&& iss >> w*/)
-				{
-					iss >> w;
-				}
-				else 
-				{
-					iss >> vertex[i];
-				}
+				iss >> (i == 3 ? w : vertex[i]);
 			}
 			tmpVertices.push_back(vertex / w);
 		}
@@ -215,30 +208,31 @@ bool Mesh::LoadFromFile(const std::string& path)
 				FaceVert tri;
 				tri.vertex = vertexIndices[0];
 				if (!normalIndices.empty()) tri.normal = normalIndices[0];
-				if (!uvIndices.empty()) tri.normal = uvIndices[0];
+				if (!uvIndices.empty()) tri.uv = uvIndices[0];
 
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri] + 1);
+				indices.push_back(uniqueVertices[tri]);
 								
 				tri.vertex = vertexIndices[i];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i];
-				if (!uvIndices.empty()) tri.normal = uvIndices[i];
+				if (!uvIndices.empty()) tri.uv = uvIndices[i];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri] + 1);
+				indices.push_back(uniqueVertices[tri]);
 
 				tri.vertex = vertexIndices[i + 1];
 				if (!normalIndices.empty()) tri.normal = normalIndices[i + 1];
-				if (!uvIndices.empty()) tri.normal = uvIndices[i + 1];
+				if (!uvIndices.empty()) tri.uv = uvIndices[i + 1];
 				
 				if (uniqueVertices.count(tri) == 0) uniqueVertices[tri] = vertexCount++;
-				indices.push_back(uniqueVertices[tri] + 1);
+				indices.push_back(uniqueVertices[tri]);
 			}
 		}
 	}
 
 	in.close();
-	
+
+	vertices.reserve(vertexCount);
 	vertices.resize(vertexCount);
 	std::map<FaceVert, int, VertexLess>::iterator iter;
 	for (iter = uniqueVertices.begin(); iter != uniqueVertices.end(); ++iter)
