@@ -57,6 +57,9 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -89,6 +92,12 @@
     <ClInclude Include="Camera.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="MeshVertexShader.glsl">
@@ -96,6 +105,12 @@
     </None>
     <None Include="MeshFragmentShader.glsl">
       <Filter>Fichiers shader\Fragment</Filter>
+    </None>
+    <None Include="LightFragmentShader.glsl">
+      <Filter>Fichiers shader\Fragment</Filter>
+    </None>
+    <None Include="LightVertexShader.glsl">
+      <Filter>Fichiers shader\Vertex</Filter>
     </None>
   </ItemGroup>
 </Project>

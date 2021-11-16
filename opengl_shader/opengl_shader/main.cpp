@@ -3,6 +3,7 @@
 
 #include "Helper.h"
 #include "Input.h"
+#include "Light.h"
 #include "Mesh.h"
 #include "ShaderProgram.h"
 #include "Window.h"
@@ -49,8 +50,35 @@ int main( int argc, char * argv[])
 	}
 
 	window->SetMeshProgram(ShaderProgram(
-		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" }, 
+		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
 		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
+
+	// light
+	count = 0;
+	std::vector<Light> lights;
+	std::cout << "How many light do you want 0, 1, 2 ?";
+	std::cin >> count;
+	if (count > 2) count = 2;
+	
+	if (count > 0) 
+	{
+		window->SetLightProgram(ShaderProgram(
+			Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
+			Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
+		
+		lights.reserve(count);
+		for (int i = 0; i < count; ++i)
+		{
+			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
+				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
+			l.mesh = std::make_shared <Mesh>("./models/cube.obj");
+			l.parameters = LightParameters(window->GetLightProgram().GetID(), i);
+			lights.emplace_back(l);
+		}		
+	}
+
+	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLuint usedLightMeshCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
@@ -65,7 +93,8 @@ int main( int argc, char * argv[])
 	//// change la couleur de la fenetre
 	glClearColor(1.f, 0.08f, 0.58f, 1.f);
 
-	const GLint matrixID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
+	const GLint mvpID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
+	const GLint mvID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mv");
 
 	// pointeur sur la camera de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
@@ -81,18 +110,75 @@ int main( int argc, char * argv[])
 		// remet la couleur par default
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		window->GetMeshProgram().Use();
-		for (auto mesh : meshes)
+		GLfloat time = static_cast<GLfloat>(glfwGetTime());
+
+		// Lights
+		if (lights.size() > 0)
 		{
-			glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
+			// Calcul position des lights;
+			for (size_t i = 0; i < lights.size(); ++i)
+			{
+				Light& light = lights[i];
+				float xorz = cos(time * 2.0f) * 0.5f /* mul(meshSize) */;
+				float yorx = cos(time / 2.0f) * 0.5f /* mul(meshSize) */;
+				float zory = sin(time * 2.0f) * 0.5f /* mul(meshSize) */;
+
+				if (i % 2 == 0) 
+				{
+					lights[i].position.x = xorz;
+					lights[i].position.y = yorx;
+					lights[i].position.z = zory;
+				}
+				else
+				{
+					lights[i].position.z = xorz;
+					lights[i].position.x = yorx;
+					lights[i].position.y = zory;
+				}
+
+				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
+				glUniform3fv(light.parameters.ambiant, 1, glm::value_ptr(light.ambiant));
+				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
+				glUniform3fv(light.parameters.specular, 1, glm::value_ptr(light.specular));
+			}
+
+			glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[0].position, 1.0f);
+			lights[0].position = glm::vec3(lightPosition) / lightPosition.w;
+
+			if (lights.size() == 2) 
+			{
+				lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[1].position, 1.0f);
+				lights[1].position = glm::vec3(lightPosition) / lightPosition.w;
+			}
+
+			glUniform1ui(usedLightMeshCount, lights.size());
+			window->GetLightProgram().Use();
+			glUniform1ui(usedLightCount, lights.size());
+			for (GLuint i = 0; i < lights.size(); i++)
+			{
+				Light& light = lights[i];
+				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
+				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
+				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(light.mesh->GetMVPMatrix(
+					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+				light.mesh->Draw(window->GetLightProgram());
+			}
+		}
+
+		window->GetMeshProgram().Use();
+		for (auto& mesh : meshes)
+		{
+			glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
 				window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+			glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVMatrix(
+				window->camera.GetViewMatrix())));
 			mesh.Draw(window->GetMeshProgram());
 		}
 		
 		glfwSwapBuffers(window->GetWindowPtr());
 	}
 
+	glfwDestroyWindow(window->GetWindowPtr());
 	glfwTerminate();
-
-	return 0;
+	std::exit(EXIT_SUCCESS);
 }

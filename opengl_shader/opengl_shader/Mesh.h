@@ -46,6 +46,11 @@ public:
 		return projection * view * model;
 	}
 
+	glm::mat4 GetMVMatrix(const glm::mat4& view, const glm::mat4& model = glm::mat4(1.0f))
+	{
+		return view * model;
+	}
+
 	Bounds bounds;
 
 	GLuint GetVAO() const { return m_VAO; }
