@@ -1,8 +1,8 @@
 #version 330 core
 
 layout (location = 0) in vec3 position; // the position variable has attribute position 0
-layout (location = 1) in vec3 normal; // the position variable has attribute position 0
-layout (location = 2) in vec2 uv; // the position variable has attribute position 0
+layout (location = 1) in vec3 normal; // the normal variable has attribute position 1
+layout (location = 2) in vec2 uv; // the uv variable has attribute position 2
 
 struct Vertex 
 {

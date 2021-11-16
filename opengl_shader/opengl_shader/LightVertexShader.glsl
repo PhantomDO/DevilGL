@@ -2,7 +2,8 @@
 
 layout(location = 0) in vec3 position;
 
-uniform mat4 mvp;
+uniform mat4 proj;
+uniform mat4 model;
 
 struct Light
 {
@@ -18,5 +19,5 @@ void main()
 {
 	mat4 pos = mat4(1);
 	pos[3].xyz = light.position;
-	gl_Position = mvp * vec4(position, 1.0);
+	gl_Position = proj * pos * model * vec4(position, 1.0);
 }

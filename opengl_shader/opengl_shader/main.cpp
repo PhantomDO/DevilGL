@@ -56,6 +56,7 @@ int main( int argc, char * argv[])
 	// light
 	count = 0;
 	std::vector<Light> lights;
+	std::vector<LightParameters> meshLightParameters;
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
@@ -67,18 +68,26 @@ int main( int argc, char * argv[])
 			Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
 		
 		lights.reserve(count);
+		meshLightParameters.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
 			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.mesh = std::make_shared <Mesh>("./models/cube.obj");
-			l.parameters = LightParameters(window->GetLightProgram().GetID(), i);
+			l.parameters = LightParameters(window->GetLightProgram().GetID());
+			meshLightParameters.emplace_back(LightParameters(window->GetMeshProgram().GetID(), i));
 			lights.emplace_back(l);
 		}		
 	}
 
+	window->GetLightProgram().Use();
+	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
+	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
+	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
+	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), meshes[0].bounds.size / 40.0f)));
+	
 	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
-	GLuint usedLightMeshCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
@@ -113,8 +122,12 @@ int main( int argc, char * argv[])
 		GLfloat time = static_cast<GLfloat>(glfwGetTime());
 
 		// Lights
-		if (lights.size() > 0)
+		if (!lights.empty())
 		{
+			window->GetLightProgram().Use();
+			glUniform1ui(usedLightMeshCount, lights.size());
+			glUniform1ui(usedLightCount, lights.size());
+
 			// Calcul position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
@@ -140,23 +153,10 @@ int main( int argc, char * argv[])
 				glUniform3fv(light.parameters.ambiant, 1, glm::value_ptr(light.ambiant));
 				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
 				glUniform3fv(light.parameters.specular, 1, glm::value_ptr(light.specular));
-			}
+				
+				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i].position, 1.0f);
+				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
 
-			glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[0].position, 1.0f);
-			lights[0].position = glm::vec3(lightPosition) / lightPosition.w;
-
-			if (lights.size() == 2) 
-			{
-				lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[1].position, 1.0f);
-				lights[1].position = glm::vec3(lightPosition) / lightPosition.w;
-			}
-
-			glUniform1ui(usedLightMeshCount, lights.size());
-			window->GetLightProgram().Use();
-			glUniform1ui(usedLightCount, lights.size());
-			for (GLuint i = 0; i < lights.size(); i++)
-			{
-				Light& light = lights[i];
 				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
 				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(light.mesh->GetMVPMatrix(
@@ -166,6 +166,7 @@ int main( int argc, char * argv[])
 		}
 
 		window->GetMeshProgram().Use();
+
 		for (auto& mesh : meshes)
 		{
 			glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
