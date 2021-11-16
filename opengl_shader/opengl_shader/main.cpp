@@ -38,7 +38,15 @@ int main( int argc, char * argv[])
 	glClearColor(background->r,	background->g,	background->b,	1.0f);
 
 	// mesh
-	Mesh mesh = Mesh("./models/duck.obj");
+	int count;
+	std::vector<Mesh> meshes;
+	std::cout << "How many mesh do you want ?";
+	std::cin >> count;
+	meshes.reserve(count);
+	for (int i = 0; i < count; ++i)
+	{
+		meshes.emplace_back("./models/cube.obj");
+	}
 
 	window->SetMeshProgram(ShaderProgram(
 		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" }, 
@@ -74,9 +82,12 @@ int main( int argc, char * argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		window->GetMeshProgram().Use();
-		glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
-			window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-		mesh.Draw(window->GetMeshProgram());
+		for (auto mesh : meshes)
+		{
+			glUniformMatrix4fv(matrixID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
+				window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+			mesh.Draw(window->GetMeshProgram());
+		}
 		
 		glfwSwapBuffers(window->GetWindowPtr());
 	}

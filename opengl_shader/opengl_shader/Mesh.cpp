@@ -127,6 +127,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 	std::map<FaceVert, int, VertexLess> uniqueVertices;
 	uint32_t vertexCount = 0;
 	std::string line;
+	bool isBlenderOBJ = false;
 
 	while(!in.eof())
 	{
@@ -134,7 +135,11 @@ bool Mesh::LoadFromFile(const std::string& path)
 		std::istringstream iss(line);
 
 		char trash;
-		if (!line.compare(0, 2, "v "))
+		if (!line.compare(0, 9, "# Blender"))
+		{
+			isBlenderOBJ = true;
+		}
+		else if (!line.compare(0, 2, "v "))
 		{
 			iss >> trash;
 			glm::vec3 vertex;
@@ -145,7 +150,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 			}
 			tmpVertices.push_back(vertex / w);
 		}
-		else if (!line.compare(0, 2, "vt "))
+		else if (!line.compare(0, 3, "vt "))
 		{
 			iss >> trash;
 			glm::vec2 uv;			
@@ -155,7 +160,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 			}
 			tmpUvs.push_back(uv);
 		}
-		else if (!line.compare(0, 2, "vn "))
+		else if (!line.compare(0, 3, "vn "))
 		{
 			iss >> trash;
 			glm::vec3 normal;			
@@ -179,7 +184,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 
 				int vi = 0, ni = 0, uvi = 0;
 
-				if (sscanf_s(linePtr, "%d/%d/%d", &vi, &ni, &uvi) == 3)
+				if (sscanf_s(linePtr, "%d/%d/%d", &vi, !isBlenderOBJ ? &ni : &uvi, !isBlenderOBJ ? &uvi : &ni) == 3)
 				{
 					vertexIndices.push_back(vi - 1); 
 					normalIndices.push_back(ni - 1); 
@@ -237,11 +242,13 @@ bool Mesh::LoadFromFile(const std::string& path)
 	std::map<FaceVert, int, VertexLess>::iterator iter;
 	for (iter = uniqueVertices.begin(); iter != uniqueVertices.end(); ++iter)
 	{
-		vertices[iter->second] = {
-			tmpVertices[iter->first.vertex], 
-			iter->first.normal != -1 ? tmpNormals[iter->first.normal] : glm::vec3(0), 
-			iter->first.uv != -1 ? tmpUvs[iter->first.uv] : glm::vec2(0)
-		};
+		auto position = tmpVertices[iter->first.vertex];
+		auto normal = iter->first.normal != -1 && !tmpNormals.empty()
+			? tmpNormals[iter->first.normal] : glm::vec3(0);
+		auto uv = iter->first.uv != -1 && !tmpNormals.empty()
+			? tmpUvs[iter->first.uv] : glm::vec2(0);
+
+		vertices[iter->second] = { position, normal, uv };
 	}
 
 	std::cerr << "# v# " << vertices.size() << " f# " << indices.size() / 3 << std::endl;
