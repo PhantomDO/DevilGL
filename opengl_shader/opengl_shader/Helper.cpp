@@ -1,8 +1,10 @@
 ﻿#include "Helper.h"
 
+#include "Debug.h"
+
 void Helper::Terminate(const std::string& err)
 {
-	std::cerr << err << std::endl;
+	Debug::LogError(err);
 	glfwTerminate();
 	std::exit(EXIT_FAILURE);
 }
@@ -10,18 +12,21 @@ void Helper::Terminate(const std::string& err)
 void Helper::RendererInfo()
 {
 	const char* glString;
+	std::stringstream ss;
 
 	glString = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 	if(!glString) glString = GetGLError();
-	std::cout << "Company : " << glString << std::endl;
+	ss << "Company : " << glString << std::endl;
 	
 	glString = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	if(!glString) glString = GetGLError();
-	std::cout << "Renderer : " << glString << std::endl;
+	ss << "Renderer : " << glString << std::endl;
 	
 	glString = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 	if(!glString) glString = GetGLError();
-	std::cout << "Version : " << glString << std::endl;
+	ss << "Version : " << glString << std::endl;
+
+	Debug::Log(ss.str());
 }
 
 const char* Helper::GetGLError()

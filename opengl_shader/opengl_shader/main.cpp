@@ -1,10 +1,13 @@
 ﻿#include <iostream>
 #include <string>
+#include <filesystem>
 
+#include "Entity.h"
 #include "Helper.h"
 #include "Input.h"
 #include "Light.h"
 #include "Mesh.h"
+#include "MeshRenderer.h"
 #include "ShaderProgram.h"
 #include "Window.h"
 
@@ -39,14 +42,39 @@ int main( int argc, char * argv[])
 	glClearColor(background->r,	background->g,	background->b,	1.0f);
 
 	// mesh
+	std::stringstream ss;
+	ss << "Choose between this obj's : " << std::endl;
+	std::string path = "./models";
+	std::vector<std::string> objs;
+	int objCount = 0, objChoosen = -1;
+	for (const auto& entry : std::filesystem::directory_iterator(path))
+	{
+		ss << "\t- [" << objCount << "] " << entry.path() << std::endl;
+		//objs.emplace_back(entry.path().c_str());
+	}
+	ss << "Which one (-1 if you don't choose) ? ";
+
 	int count;
-	std::vector<Mesh> meshes;
-	std::cout << "How many mesh do you want ?";
+	std::vector<Entity> entities;
+	std::cout << "How many entities do you want ?";
 	std::cin >> count;
-	meshes.reserve(count);
+	entities.reserve(count);
 	for (int i = 0; i < count; ++i)
 	{
-		meshes.emplace_back("./models/cube.obj");
+		std::stringstream objPath;
+		ss << path << "/";
+		Entity entity = Entity();
+		Debug::Log(ss.str());
+		std::cin >> objChoosen;
+		
+		if (objChoosen > -1)
+		{
+			ss << objs[objChoosen];
+			entity.AddComponent(MeshRenderer(Mesh(ss.str())));
+		}
+
+		entities.emplace_back(entity);
+		//entities.emplace_back("./models/cube.obj");
 	}
 
 	window->SetMeshProgram(ShaderProgram(
@@ -71,6 +99,8 @@ int main( int argc, char * argv[])
 		meshLightParameters.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
+			//Entity entity = Entity();
+
 			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.mesh = std::make_shared <Mesh>("./models/cube.obj");
@@ -84,7 +114,7 @@ int main( int argc, char * argv[])
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
-	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), meshes[0].bounds.size / 40.0f)));
+	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), entities[0].GetComponent<MeshRenderer>().GetMesh()->bounds.size / 40.0f)));
 	
 	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
@@ -158,22 +188,23 @@ int main( int argc, char * argv[])
 				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
 
 				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
-				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
+				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));/*
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(light.mesh->GetMVPMatrix(
 					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-				light.mesh->Draw(window->GetLightProgram());
+				light.mesh->Draw(window->GetLightProgram());*/
 			}
 		}
 
 		window->GetMeshProgram().Use();
 
-		for (auto& mesh : meshes)
+		for (auto& entity : entities)
 		{
-			glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVPMatrix(
+			auto& meshRenderer = entity.GetComponent<MeshRenderer>();
+			glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(meshRenderer.GetMVPMatrix(
 				window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-			glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mesh.GetMVMatrix(
+			glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(meshRenderer.GetMVMatrix(
 				window->camera.GetViewMatrix())));
-			mesh.Draw(window->GetMeshProgram());
+			meshRenderer.Draw(window->GetMeshProgram());
 		}
 		
 		glfwSwapBuffers(window->GetWindowPtr());

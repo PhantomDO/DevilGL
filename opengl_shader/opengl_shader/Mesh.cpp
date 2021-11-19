@@ -5,22 +5,19 @@
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
+#include "Debug.h"
 #include "Helper.h"
 
 Mesh::Mesh(const std::string& path)
 {
 	if (!LoadFromFile(path))
 	{
-		Helper::Terminate("Can't load obj");
+		Debug::LogError("Can't load obj");
+		return;
 	}
-
-	transform = Transform();
-	Setup();
 	
-	std::cerr << "Mesh loaded." << std::endl;
+	Debug::Log("Mesh loaded.");
 }
 
 Mesh::Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices)
@@ -34,54 +31,8 @@ Mesh::Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indi
 	}
 
 	this->indices = indices;
-	transform = Transform();
 
-	Setup();
-
-	std::cerr << "Mesh loaded." << std::endl;
-}
-
-Mesh::~Mesh()
-{
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-}
-
-void Mesh::Setup()
-{
-	//Allocation des buffers
-	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
-	glGenBuffers(1, &m_EBO);
-
-	//Spécification des vertices pour le mesh
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices.front(), GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices.front(), GL_STATIC_DRAW);
-
-	//spécifie l'organisation de l'entrée du vertex shader
-	//Positions
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(0));
-	//normales
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(offsetof(Vertex, Normal)));
-	//Coordonnées de textures
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid*>(offsetof(Vertex, UV)));
-
-	glBindVertexArray(0);
-}
-
-void Mesh::Draw(const ShaderProgram& shader) const
-{
-	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
-	glBindVertexArray(0);
+	Debug::Log("Mesh copied.");
 }
 
 struct FaceVert
@@ -256,13 +207,13 @@ bool Mesh::LoadFromFile(const std::string& path)
 	glm::vec3 min, max;
 	if (!vertices.empty())
 	{
-		min = max = vertices[0].Position;
+		min = max = vertices[0].position;
 		for (uint32_t i = 1; i < vertices.size(); ++i)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				min[j] = std::min(min[j], vertices[i].Position[j]);			
-				max[j] = std::max(max[j], vertices[i].Position[j]);			
+				min[j] = std::min(min[j], vertices[i].position[j]);			
+				max[j] = std::max(max[j], vertices[i].position[j]);			
 			}
 		}
 	}
