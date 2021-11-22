@@ -43,7 +43,8 @@ std::optional<Arg> Entity::AddComponent(Arg&& component)
 	if (Component* baseComponent = dynamic_cast<Component*>(&component))
 	{
 		m_Components.emplace_back(std::move(component));
-		return dynamic_cast<Arg>(&m_Components[m_Components.size() - 1]);
+		//Arg* typedComponent = dynamic_cast<Arg*>(&m_Components[m_Components.size() - 1]);
+		return GetComponent<MeshRenderer>();
 	}
 
 	Debug::LogError("Can't had this component to entity.");
