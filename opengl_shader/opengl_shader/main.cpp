@@ -49,8 +49,11 @@ int main( int argc, char * argv[])
 	int objCount = 0, objChoosen = -1;
 	for (const auto& entry : std::filesystem::directory_iterator(path))
 	{
-		ss << "\t- [" << objCount << "] " << entry.path() << std::endl;
-		//objs.emplace_back(entry.path().c_str());
+		std::string pathObject = entry.path().generic_u8string();
+		std::replace(pathObject.begin(), pathObject.end(), '\\', '/');
+		objs.emplace_back(pathObject);
+		ss << "\t- [" << objCount << "] " << pathObject << std::endl;
+		objCount++;
 	}
 	ss << "Which one (-1 if you don't choose) ? ";
 
@@ -62,16 +65,18 @@ int main( int argc, char * argv[])
 	for (int i = 0; i < count; ++i)
 	{
 		std::stringstream objPath;
-		ss << path << "/";
+		//ss << path << "/";
 		Entity entity = Entity();
-		Debug::Log(ss.str());
-		std::cin >> objChoosen;
-		
-		if (objChoosen > -1)
+
+		while (objChoosen <= -1) 
 		{
-			ss << objs[objChoosen];
-			entity.AddComponent(MeshRenderer(Mesh(ss.str())));
+			Debug::Log(ss.str());
+			std::cin >> objChoosen;
 		}
+	
+		Debug::Log(objs[objChoosen]);
+		entity.AddComponent(MeshRenderer(Mesh(objs[objChoosen])));
+		objChoosen = -1;
 
 		entities.emplace_back(entity);
 		//entities.emplace_back("./models/cube.obj");
@@ -114,7 +119,7 @@ int main( int argc, char * argv[])
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
-	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), entities[0].GetComponent<MeshRenderer>().GetMesh()->bounds.size / 40.0f)));
+	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), glm::vec3(1)/*entities[0].GetComponent<MeshRenderer>().value().GetMesh()->bounds.size / 40.0f*/)));
 	
 	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
@@ -199,12 +204,15 @@ int main( int argc, char * argv[])
 
 		for (auto& entity : entities)
 		{
-			auto& meshRenderer = entity.GetComponent<MeshRenderer>();
-			glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(meshRenderer.GetMVPMatrix(
-				window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-			glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(meshRenderer.GetMVMatrix(
-				window->camera.GetViewMatrix())));
-			meshRenderer.Draw(window->GetMeshProgram());
+			auto meshRenderer = entity.GetComponent<MeshRenderer>();
+			if (meshRenderer.has_value()) 
+			{
+				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(meshRenderer.value().GetMVPMatrix(
+					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(meshRenderer.value().GetMVMatrix(
+					window->camera.GetViewMatrix())));
+				meshRenderer.value().Draw(window->GetMeshProgram());
+			}
 		}
 		
 		glfwSwapBuffers(window->GetWindowPtr());

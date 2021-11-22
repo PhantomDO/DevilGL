@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "ShaderProgram.h"
 
-class MeshRenderer : Component
+class MeshRenderer : public Component
 {
 private:
 
@@ -49,7 +49,7 @@ public:
 		SetMesh(std::move(mesh));
 	}
 
-	~MeshRenderer()
+	~MeshRenderer() override
 	{
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
