@@ -86,7 +86,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 		std::istringstream iss(line);
 
 		char trash;
-		if (!line.compare(0, 9, "# Blender"))
+		if (!line.compare(0, 1, "#"))
 		{
 			isBlenderOBJ = true;
 		}

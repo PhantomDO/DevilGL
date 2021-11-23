@@ -3,11 +3,13 @@
 void Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 {
 	int windowSizeX, windowSizeY;
-	glm::vec3& color = *(static_cast<glm::vec3*>(glfwGetWindowUserPointer(pWindow)));
+
+	Window& window = *(reinterpret_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
+	//glm::vec3& color = *(static_cast<glm::vec3*>(glfwGetWindowUserPointer(pWindow)));
 		
 	// recupere taille de la fenetre
 	glfwGetWindowSize(pWindow, &windowSizeX, &windowSizeY);		
-	color = Helper::HSVtoRGB(glm::vec3(color.r, static_cast<float>(x/windowSizeX), static_cast<float>(y/windowSizeY)));
+	//color = Helper::HSVtoRGB(glm::vec3(color.r, static_cast<float>(x/windowSizeX), static_cast<float>(y/windowSizeY)));
 }
 
 void Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)

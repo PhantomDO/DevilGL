@@ -42,6 +42,7 @@ Window::Window(const int& width, const int& height)
 	Helper::RendererInfo();
 
 	camera = Camera();
+	std::cout << "FOV " << camera.fov << std::endl;
 	camera.transform.position = glm::vec3(0, 0, 10);
 	camera.SetProjectionMatrix(width, height);
 	camera.SetViewMatrix();

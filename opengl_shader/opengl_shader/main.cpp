@@ -33,7 +33,7 @@ int main( int argc, char * argv[])
 		
 	// pointeur sur les touche du claver
 	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
-	glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
+	//glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
 	glfwSetWindowSizeCallback(window->GetWindowPtr(), Input::GetSize);
 
 	// COLOR
@@ -66,7 +66,6 @@ int main( int argc, char * argv[])
 	for (int i = 0; i < count; ++i)
 	{
 		std::stringstream objPath;
-		//ss << path << "/";
 		auto entity = std::make_shared<GameEntity>();
 
 		while (objChoosen <= -1) 
@@ -123,11 +122,11 @@ int main( int argc, char * argv[])
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
-
-	if (entities[0] != nullptr)
+	
+	if (std::shared_ptr<MeshRenderer> mr; entities[0] != nullptr && entities[0]->TryGetComponent(mr))
 	{
-		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), 
-			entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.size / 10.0f)));
+		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
+			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh()->bounds.size / 40.0f)));
 	}
 	
 	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
@@ -219,6 +218,7 @@ int main( int argc, char * argv[])
 		{
 			if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr)) 
 			{
+				std::cout << "FOV : " << window->camera.fov << std::endl;
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
 				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
