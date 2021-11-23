@@ -49,7 +49,7 @@ struct Mesh
 
 private:
 	bool LoadFromFile(const std::string& path);
-
+	void NormalizeAndCenterMesh();
 public:
 
 	Mesh(const std::string& path);

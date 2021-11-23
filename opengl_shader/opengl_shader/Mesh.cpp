@@ -204,6 +204,8 @@ bool Mesh::LoadFromFile(const std::string& path)
 
 	std::cerr << "# v# " << vertices.size() << " f# " << indices.size() / 3 << std::endl;
 
+	NormalizeAndCenterMesh();
+
 	glm::vec3 min, max;
 	if (!vertices.empty())
 	{
@@ -227,5 +229,38 @@ bool Mesh::LoadFromFile(const std::string& path)
 	bounds = Bounds(center, size);
 
 	return true;
+}
+
+void Mesh::NormalizeAndCenterMesh()
+{
+	auto farVertex = glm::vec3(0);
+	auto center = glm::vec3(0);
+
+	for (const auto& [position, normal, uv] : vertices)
+	{
+		center += position;
+	}
+
+	center /= vertices.size();
+
+	for (auto& vertice : vertices)
+	{
+		vertice.position -= center;
+
+		const auto farLen = glm::length(farVertex);
+		const auto verLen = glm::length(vertice.position);
+
+		if (farLen * farLen < verLen * verLen)
+		{
+			farVertex = vertice.position;
+		}
+	}
+
+	const auto len = glm::length(farVertex);
+	for (auto& vertice : vertices)
+	{
+		vertice.position /= len;
+	}
+
 }
 

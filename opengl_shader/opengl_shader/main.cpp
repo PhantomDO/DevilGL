@@ -156,6 +156,9 @@ int main( int argc, char * argv[])
 	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
 
 
+	auto meshSize = glm::distance(entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.min, 
+		entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.max);
+
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
 		glfwPollEvents();
@@ -170,14 +173,14 @@ int main( int argc, char * argv[])
 			window->GetLightProgram().Use();
 			glUniform1ui(usedLightMeshCount, lights.size());
 			glUniform1ui(usedLightCount, lights.size());
-
+			
 			// Calcul position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
 				Light& light = lights[i];
-				float xorz = cos(time * 2.0f) * 0.5f /* mul(meshSize) */;
-				float yorx = cos(time / 2.0f) * 0.5f /* mul(meshSize) */;
-				float zory = sin(time * 2.0f) * 0.5f /* mul(meshSize) */;
+				float xorz = cos(time * 2.0f) * 0.5f * meshSize;
+				float yorx = cos(time / 2.0f) * 0.5f * meshSize;
+				float zory = sin(time * 2.0f) * 0.5f * meshSize;
 
 				if (i % 2 == 0) 
 				{
@@ -211,14 +214,12 @@ int main( int argc, char * argv[])
 				}
 			}
 		}
-
+		
 		window->GetMeshProgram().Use();
-
 		for (auto& entity : entities)
 		{
 			if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr)) 
 			{
-				std::cout << "FOV : " << window->camera.fov << std::endl;
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
 				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
@@ -226,7 +227,7 @@ int main( int argc, char * argv[])
 				mr->Draw(window->GetMeshProgram());
 			}
 		}
-		
+
 		glfwSwapBuffers(window->GetWindowPtr());
 	}
 
