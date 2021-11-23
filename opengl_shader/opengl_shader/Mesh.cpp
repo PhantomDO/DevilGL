@@ -22,7 +22,7 @@ Mesh::Mesh(const std::string& path)
 
 Mesh::Mesh(const std::vector<GLfloat>& vertices, const std::vector<GLuint>& indices)
 {
-	for (int i = 0; i < vertices.size(); i += 3)
+	for (size_t i = 0; i < vertices.size(); i += 3)
 	{
 		this->vertices.push_back(Vertex{
 			glm::vec3(vertices[i + 0], vertices[i + 1], vertices[i + 2]), 
@@ -159,7 +159,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 				while(linePtr[0] != ' ' && linePtr[0] != 0) ++linePtr;
 			}
 			
-			for (uint32_t i = 1; i < vertexIndices.size() - 1; ++i)
+			for (size_t i = 1; i < vertexIndices.size() - 1; ++i)
 			{
 				FaceVert tri;
 				tri.vertex = vertexIndices[0];

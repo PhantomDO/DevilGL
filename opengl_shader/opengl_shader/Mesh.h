@@ -6,7 +6,6 @@
 #include <glm/ext.hpp>
 
 #include "Bounds.h"
-#include "Transform.h"
 
 struct Vertex
 {

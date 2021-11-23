@@ -16,5 +16,5 @@ void Camera::SetProjectionMatrix(const int& width, const int& height)
 
 void Camera::SetViewMatrix()
 {
-	m_ViewMatrix = glm::lookAt(transform.position, transform.position + transform.GetForward(), up);
+	m_ViewMatrix = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.GetForward(), up);
 }

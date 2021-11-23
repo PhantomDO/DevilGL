@@ -129,12 +129,12 @@ int main( int argc, char * argv[])
 			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh()->bounds.size / 40.0f)));
 	}
 	
-	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
-	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
+	GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
-	/// pointeur sur la position de la souris
+	/// pointeur sur la m_Position de la souris
 	glfwSetCursorPosCallback(window->GetWindowPtr(), Input::CursorPosCallback);
 
 	//// utilise le programe creer precedement
@@ -171,10 +171,10 @@ int main( int argc, char * argv[])
 		if (!lights.empty())
 		{
 			window->GetLightProgram().Use();
-			glUniform1ui(usedLightMeshCount, lights.size());
-			glUniform1ui(usedLightCount, lights.size());
+			glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
+			glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
 			
-			// Calcul position des lights;
+			// Calcul m_Position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
 				Light& light = lights[i];
@@ -208,8 +208,13 @@ int main( int argc, char * argv[])
 
 				if (std::shared_ptr<MeshRenderer> mr; light.TryGetComponent(mr)) 
 				{
+					std::shared_ptr<Transform> tr;
 					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
-						window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+						window->camera.GetProjectionMatrix(), 
+						window->camera.GetViewMatrix(), 
+						light.TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
+						)));
+
 					mr->Draw(window->GetLightProgram());
 				}
 			}
@@ -220,10 +225,19 @@ int main( int argc, char * argv[])
 		{
 			if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr)) 
 			{
+				std::shared_ptr<Transform> tr;
+				bool hasTransform = entity->TryGetComponent(tr);
+
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
-					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+					window->camera.GetProjectionMatrix(), 
+					window->camera.GetViewMatrix(),
+					hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+				)));
+
 				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
-					window->camera.GetViewMatrix())));
+					window->camera.GetViewMatrix(),
+					hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+				)));
 				mr->Draw(window->GetMeshProgram());
 			}
 		}

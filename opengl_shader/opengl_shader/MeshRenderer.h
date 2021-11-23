@@ -14,7 +14,7 @@ private:
 
 public:
 
-	std::shared_ptr<Mesh>& GetMesh() { return m_Mesh; }
+	std::shared_ptr<Mesh> GetMesh() const { return m_Mesh; }
 	void SetMesh(const Mesh& mesh);
 	void SetMesh(Mesh&& mesh);
 
@@ -23,8 +23,8 @@ public:
 
 	void Draw(const ShaderProgram& shader) const;
 
-	glm::mat4 GetMVPMatrix(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& model = glm::mat4(1.0f));
-	glm::mat4 GetMVMatrix(const glm::mat4& view, const glm::mat4& model = glm::mat4(1.0f));
+	glm::mat4 GetMVPMatrix(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& model);
+	glm::mat4 GetMVMatrix(const glm::mat4& view, const glm::mat4& model);
 
 	GLuint GetVAO() const { return m_VAO; }
 	GLuint GetVBO() const { return m_VBO; }

@@ -28,7 +28,7 @@ private:
 
 	int m_Width, m_Height;
 
-	ShaderProgram m_MeshProgram;
-	ShaderProgram m_LightProgram;
+	ShaderProgram m_MeshProgram {};
+	ShaderProgram m_LightProgram {};
 	GLFWwindow* m_Window;
 };

@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <vector>
 
-#include "Component.h"
 #include "Debug.h"
 #include "MeshRenderer.h"
 #include "Transform.h"
@@ -40,7 +39,7 @@ std::shared_ptr<Arg> Entity::AddComponent(const std::shared_ptr<Arg>& component)
 	if (std::shared_ptr<Component> baseComponent = std::dynamic_pointer_cast<Component>(std::make_shared<Arg>(component)))
 	{
 		m_Components.emplace_back(std::move(component));
-		return GetComponent<MeshRenderer>();
+		return GetComponent<Arg>();
 	}
 
 	Debug::LogError("Can't had this component to entity.");
