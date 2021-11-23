@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "Entity.h"
+#include "GameEntity.h"
 #include "Helper.h"
 #include "Input.h"
 #include "Light.h"
@@ -58,7 +59,7 @@ int main( int argc, char * argv[])
 	ss << "Which one (-1 if you don't choose) ? ";
 
 	int count;
-	std::vector<std::shared_ptr<Entity>> entities;
+	std::vector<std::shared_ptr<GameEntity>> entities;
 	std::cout << "How many entities do you want ?";
 	std::cin >> count;
 	entities.reserve(count);
@@ -66,7 +67,7 @@ int main( int argc, char * argv[])
 	{
 		std::stringstream objPath;
 		//ss << path << "/";
-		auto entity = std::make_shared<Entity>();
+		auto entity = std::make_shared<GameEntity>();
 
 		while (objChoosen <= -1) 
 		{
@@ -105,8 +106,6 @@ int main( int argc, char * argv[])
 		meshLightParameters.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			//Entity entity = Entity();
-
 			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.parameters = LightParameters(window->GetLightProgram().GetID());

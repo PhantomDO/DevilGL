@@ -5,23 +5,20 @@
 #include "Debug.h"
 #include "MeshRenderer.h"
 #include "Transform.h"
-#include <optional>
 
 static int Entity_Count = -1;
 
 class Entity
 {
-private:
-
+protected:
 	int m_InstanceID;
 	std::vector<std::shared_ptr<Component>> m_Components;
 
 public:
-	std::shared_ptr<Transform> transform;
 	int GetInstanceID() const { return m_InstanceID; }
 
 	template <class Arg>
-	std::shared_ptr<Arg> AddComponent(std::shared_ptr<Arg> component);
+	std::shared_ptr<Arg> AddComponent(const std::shared_ptr<Arg>& component);
 
 	template<typename Arg>
 	std::shared_ptr<Arg> GetComponent();
@@ -32,13 +29,13 @@ public:
 public:
 
 	Entity()
-		: m_InstanceID(Entity_Count++), transform(std::make_shared<Transform>())
+		: m_InstanceID(Entity_Count++)
 	{
 	}
 };
 
 template <typename Arg>
-std::shared_ptr<Arg> Entity::AddComponent(std::shared_ptr<Arg> component)
+std::shared_ptr<Arg> Entity::AddComponent(const std::shared_ptr<Arg>& component)
 {
 	if (std::shared_ptr<Component> baseComponent = std::dynamic_pointer_cast<Component>(std::make_shared<Arg>(component)))
 	{
@@ -61,7 +58,7 @@ std::shared_ptr<Arg> Entity::GetComponent()
 		}
 	}
 
-	return {};
+	return nullptr;
 }
 
 template <typename Arg>
