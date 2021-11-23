@@ -14,20 +14,20 @@ class Entity
 private:
 
 	int m_InstanceID;
-	std::vector<Component> m_Components;
+	std::vector<std::shared_ptr<Component>> m_Components;
 
 public:
 	std::shared_ptr<Transform> transform;
 	int GetInstanceID() const { return m_InstanceID; }
 
-	template<typename Arg>
-	std::optional<Arg> AddComponent(Arg&& component);
+	template <class Arg>
+	std::shared_ptr<Arg> AddComponent(std::shared_ptr<Arg> component);
 
 	template<typename Arg>
-	std::optional<Arg> GetComponent();
+	std::shared_ptr<Arg> GetComponent();
 
 	template<typename Arg>
-	bool TryGetComponent(Arg& component);
+	bool TryGetComponent(std::shared_ptr<Arg>& component);
 
 public:
 
@@ -38,12 +38,11 @@ public:
 };
 
 template <typename Arg>
-std::optional<Arg> Entity::AddComponent(Arg&& component)
+std::shared_ptr<Arg> Entity::AddComponent(std::shared_ptr<Arg> component)
 {
-	if (Component* baseComponent = dynamic_cast<Component*>(&component))
+	if (std::shared_ptr<Component> baseComponent = std::dynamic_pointer_cast<Component>(std::make_shared<Arg>(component)))
 	{
 		m_Components.emplace_back(std::move(component));
-		//Arg* typedComponent = dynamic_cast<Arg*>(&m_Components[m_Components.size() - 1]);
 		return GetComponent<MeshRenderer>();
 	}
 
@@ -52,13 +51,13 @@ std::optional<Arg> Entity::AddComponent(Arg&& component)
 }
 
 template <typename Arg>
-std::optional<Arg> Entity::GetComponent()
+std::shared_ptr<Arg> Entity::GetComponent()
 {
-	for (auto& component : m_Components)
+	for (auto component : m_Components)
 	{
-		if (Arg* typedComponent = dynamic_cast<Arg*>(&component))
+		if (auto typedComponent = std::dynamic_pointer_cast<Arg>(component))
 		{
-			return *typedComponent;
+			return typedComponent;
 		}
 	}
 
@@ -66,12 +65,8 @@ std::optional<Arg> Entity::GetComponent()
 }
 
 template <typename Arg>
-bool Entity::TryGetComponent(Arg& component)
+bool Entity::TryGetComponent(std::shared_ptr<Arg>& component)
 {
-	if (((component = GetComponent<Arg>())) && component != nullptr)
-	{
-		return true;
-	}
-
-	return false;
+	component = GetComponent<Arg>();
+	return component != nullptr;
 }

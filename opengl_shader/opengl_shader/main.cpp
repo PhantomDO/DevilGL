@@ -75,7 +75,9 @@ int main( int argc, char * argv[])
 		}
 	
 		Debug::Log(objs[objChoosen]);
-		entity.AddComponent(MeshRenderer(Mesh(objs[objChoosen])));
+		auto mr = std::make_shared<MeshRenderer>();
+		mr->SetMesh(Mesh(objs[objChoosen]));
+		entity.AddComponent(mr);
 		objChoosen = -1;
 
 		entities.emplace_back(entity);
@@ -204,14 +206,13 @@ int main( int argc, char * argv[])
 
 		for (auto& entity : entities)
 		{
-			auto meshRenderer = entity.GetComponent<MeshRenderer>();
-			if (meshRenderer.has_value()) 
+			if (std::shared_ptr<MeshRenderer> mr; entity.TryGetComponent(mr)) 
 			{
-				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(meshRenderer.value().GetMVPMatrix(
+				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(meshRenderer.value().GetMVMatrix(
+				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
 					window->camera.GetViewMatrix())));
-				meshRenderer.value().Draw(window->GetMeshProgram());
+				mr->Draw(window->GetMeshProgram());
 			}
 		}
 		

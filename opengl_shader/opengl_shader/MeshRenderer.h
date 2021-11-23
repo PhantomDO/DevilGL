@@ -37,16 +37,16 @@ public:
 
 	}
 
-	MeshRenderer(const Mesh& mesh)
-		: m_VAO(0), m_VBO(0), m_EBO(0)
+	MeshRenderer(const MeshRenderer& mr)
+		: m_Mesh(mr.m_Mesh), m_VAO(mr.m_VAO), m_VBO(mr.m_VBO), m_EBO(mr.m_EBO)
 	{
-		SetMesh(mesh);
+
 	}
 
-	MeshRenderer(Mesh&& mesh)
-		: m_VAO(0), m_VBO(0), m_EBO(0)
+	MeshRenderer(std::shared_ptr<MeshRenderer> mr)
+		: m_Mesh(mr->m_Mesh), m_VAO(mr->m_VAO), m_VBO(mr->m_VBO), m_EBO(mr->m_EBO)
 	{
-		SetMesh(std::move(mesh));
+
 	}
 
 	~MeshRenderer() override
