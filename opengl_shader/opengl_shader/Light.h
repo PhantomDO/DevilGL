@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "Entity.h"
 #include "Mesh.h"
 #include "Tools.h"
 
@@ -35,15 +36,15 @@ struct LightParameters
 	}
 };
 
-struct Light
+class Light : public Entity
 {
+public:
 	glm::vec3 position;
 	glm::vec3 ambiant;
 	glm::vec3 diffuse;
 	glm::vec3 specular;
 
 	LightParameters parameters = LightParameters{};
-	std::shared_ptr<Mesh> mesh = nullptr;
 	
 	Light() = default;
 

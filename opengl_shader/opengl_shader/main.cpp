@@ -58,7 +58,7 @@ int main( int argc, char * argv[])
 	ss << "Which one (-1 if you don't choose) ? ";
 
 	int count;
-	std::vector<Entity> entities;
+	std::vector<std::shared_ptr<Entity>> entities;
 	std::cout << "How many entities do you want ?";
 	std::cin >> count;
 	entities.reserve(count);
@@ -66,7 +66,7 @@ int main( int argc, char * argv[])
 	{
 		std::stringstream objPath;
 		//ss << path << "/";
-		Entity entity = Entity();
+		auto entity = std::make_shared<Entity>();
 
 		while (objChoosen <= -1) 
 		{
@@ -77,11 +77,10 @@ int main( int argc, char * argv[])
 		Debug::Log(objs[objChoosen]);
 		auto mr = std::make_shared<MeshRenderer>();
 		mr->SetMesh(Mesh(objs[objChoosen]));
-		entity.AddComponent(mr);
+		entity->AddComponent(mr);
 		objChoosen = -1;
 
 		entities.emplace_back(entity);
-		//entities.emplace_back("./models/cube.obj");
 	}
 
 	window->SetMeshProgram(ShaderProgram(
@@ -110,9 +109,13 @@ int main( int argc, char * argv[])
 
 			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
-			l.mesh = std::make_shared <Mesh>("./models/cube.obj");
 			l.parameters = LightParameters(window->GetLightProgram().GetID());
 			meshLightParameters.emplace_back(LightParameters(window->GetMeshProgram().GetID(), i));
+			
+			auto mr = std::make_shared<MeshRenderer>();
+			mr->SetMesh(Mesh("./models/cube.obj"));
+			l.AddComponent(mr);
+			
 			lights.emplace_back(l);
 		}		
 	}
@@ -121,7 +124,12 @@ int main( int argc, char * argv[])
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
-	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), glm::vec3(1)/*entities[0].GetComponent<MeshRenderer>().value().GetMesh()->bounds.size / 40.0f*/)));
+
+	if (entities[0] != nullptr)
+	{
+		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1), 
+			entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.size / 10.0f)));
+	}
 	
 	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
@@ -195,10 +203,14 @@ int main( int argc, char * argv[])
 				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
 
 				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
-				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));/*
-				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(light.mesh->GetMVPMatrix(
-					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
-				light.mesh->Draw(window->GetLightProgram());*/
+				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
+
+				if (std::shared_ptr<MeshRenderer> mr; light.TryGetComponent(mr)) 
+				{
+					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
+						window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
+					mr->Draw(window->GetLightProgram());
+				}
 			}
 		}
 
@@ -206,7 +218,7 @@ int main( int argc, char * argv[])
 
 		for (auto& entity : entities)
 		{
-			if (std::shared_ptr<MeshRenderer> mr; entity.TryGetComponent(mr)) 
+			if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr)) 
 			{
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 					window->camera.GetProjectionMatrix(), window->camera.GetViewMatrix())));
