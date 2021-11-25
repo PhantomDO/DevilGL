@@ -67,15 +67,29 @@ public:
 	static glm::vec3 GetWorldForward() { return glm::vec3(0, 0, -1); }
 
 	Transform()
+		: m_Origin(glm::vec4(glm::vec3(0), 1.0f))
 	{
-		m_Origin = glm::vec4(glm::vec3(0), 1.0f);
 		SetPositionAndRotation(glm::vec3(0), glm::vec3(0));
 		SetScale(glm::vec3(1));
 	}
+	
+	Transform(const Transform& tr)
+		:	m_Position(tr.m_Position), m_Rotation(tr.m_Rotation), m_Scale(tr.m_Scale),
+			m_TranslationMat(tr.m_TranslationMat), m_RotationMat(tr.m_RotationMat), m_ScaleMat(tr.m_ScaleMat),
+			m_Origin(tr.m_Origin)
+	{		
+	}
+
+	explicit Transform(std::shared_ptr<Transform> tr)
+		:	m_Position(std::move(tr->m_Position)), m_Rotation(std::move(tr->m_Rotation)), m_Scale(std::move(tr->m_Scale)),
+			m_TranslationMat(std::move(tr->m_TranslationMat)), m_RotationMat(std::move(tr->m_RotationMat)), m_ScaleMat(std::move(tr->m_ScaleMat)),
+			m_Origin(std::move(tr->m_Origin))
+	{		
+	}
 
 	Transform(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scl)
+		: m_Origin(glm::vec4(pos, 1.0f))
 	{
-		m_Origin = glm::vec4(pos, 1.0f);
 		SetPositionAndRotation(pos, rot);
 		SetScale(scl);
 	}
@@ -90,6 +104,22 @@ public:
 			<< tr.m_Scale.x << ", " << tr.m_Scale.y << ", " << tr.m_Scale.z << ") }";
 
 		return os;
+	}
+
+	Transform& operator =(const Transform& tr)
+	{
+		if (this != &tr)
+		{
+			this->m_Position = tr.m_Position;
+			this->m_Rotation = tr.m_Rotation;
+			this->m_Scale = tr.m_Scale;
+			this->m_TranslationMat = tr.m_TranslationMat;
+			this->m_RotationMat = tr.m_RotationMat;
+			this->m_ScaleMat = tr.m_ScaleMat;
+			this->m_Origin = tr.m_Origin;
+		}
+
+		return *this;
 	}
 
 };

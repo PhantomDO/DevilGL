@@ -42,11 +42,13 @@ Window::Window(const int& width, const int& height)
 	Helper::RendererInfo();
 
 	camera = Camera();
-	camera.transform.SetPosition(glm::vec3(0, 0, 10));
-	camera.SetProjectionMatrix(width, height);
-	camera.SetViewMatrix();
 
-	std::cout << camera.transform << std::endl;
+	if (std::shared_ptr<Transform> tr; camera.TryGetComponent(tr))
+	{
+		tr->SetPosition(glm::vec3(0, 0, 10));
+		camera.SetProjectionMatrix(width, height);
+		camera.SetViewMatrix();
+	}
 
 	glViewport(0,0, m_Width, m_Height);
 

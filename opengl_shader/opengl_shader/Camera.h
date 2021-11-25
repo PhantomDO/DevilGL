@@ -3,9 +3,10 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "GameEntity.h"
 #include "Transform.h"
 
-class Camera
+class Camera : public GameEntity
 {
 
 public:
@@ -13,7 +14,6 @@ public:
 	GLfloat nearClip;
 	GLfloat farClip;
 	glm::vec3 up;
-	Transform transform;
 
 	Camera();
 

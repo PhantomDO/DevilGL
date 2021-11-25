@@ -90,7 +90,6 @@ int main( int argc, char * argv[])
 	// light
 	count = 0;
 	std::vector<Light> lights;
-	std::vector<LightParameters> meshLightParameters;
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
@@ -102,13 +101,12 @@ int main( int argc, char * argv[])
 			Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
 		
 		lights.reserve(count);
-		meshLightParameters.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
 			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
-			l.parameters = LightParameters(window->GetLightProgram().GetID());
-			meshLightParameters.emplace_back(LightParameters(window->GetMeshProgram().GetID(), i));
+			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
+			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
 			
 			auto mr = std::make_shared<MeshRenderer>();
 			mr->SetMesh(Mesh("./models/cube.obj"));
@@ -117,6 +115,9 @@ int main( int argc, char * argv[])
 			lights.emplace_back(l);
 		}		
 	}
+	
+	GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
 	window->GetLightProgram().Use();
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
@@ -128,9 +129,6 @@ int main( int argc, char * argv[])
 		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
 			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh()->bounds.size / 40.0f)));
 	}
-	
-	GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
-	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
@@ -167,17 +165,43 @@ int main( int argc, char * argv[])
 
 		GLfloat time = static_cast<GLfloat>(glfwGetTime());
 
+		// Mesh
+		if (!entities.empty()) 
+		{
+			window->GetMeshProgram().Use();
+			for (auto& entity : entities)
+			{
+				if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr))
+				{
+					std::shared_ptr<Transform> tr;
+					bool hasTransform = entity->TryGetComponent(tr);
+
+					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
+						window->camera.GetProjectionMatrix(),
+						window->camera.GetViewMatrix(),
+						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+					)));
+
+					glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
+						window->camera.GetViewMatrix(),
+						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+					)));
+					mr->Draw(window->GetMeshProgram());
+				}
+			}
+		}
+		
+		glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
+		glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
+
 		// Lights
 		if (!lights.empty())
 		{
 			window->GetLightProgram().Use();
-			glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
-			glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
 			
 			// Calcul m_Position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
-				Light& light = lights[i];
 				float xorz = cos(time * 2.0f) * 0.5f * meshSize;
 				float yorx = cos(time / 2.0f) * 0.5f * meshSize;
 				float zory = sin(time * 2.0f) * 0.5f * meshSize;
@@ -194,52 +218,31 @@ int main( int argc, char * argv[])
 					lights[i].position.x = yorx;
 					lights[i].position.y = zory;
 				}
-
-				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
-				glUniform3fv(light.parameters.ambiant, 1, glm::value_ptr(light.ambiant));
-				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
-				glUniform3fv(light.parameters.specular, 1, glm::value_ptr(light.specular));
 				
 				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i].position, 1.0f);
 				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
+				
+				glUniform3fv(lights[i].parameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].parameters.ambiant, 1, glm::value_ptr(lights[i].ambiant));
+				glUniform3fv(lights[i].parameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+				glUniform3fv(lights[i].parameters.specular, 1, glm::value_ptr(lights[i].specular));
 
-				glUniform3fv(light.parameters.position, 1, glm::value_ptr(light.position));
-				glUniform3fv(light.parameters.diffuse, 1, glm::value_ptr(light.diffuse));
-
-				if (std::shared_ptr<MeshRenderer> mr; light.TryGetComponent(mr)) 
+				glUniform3fv(lights[i].meshParameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].meshParameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+				
+				if (std::shared_ptr<MeshRenderer> mr; lights[i].TryGetComponent(mr))
 				{
 					std::shared_ptr<Transform> tr;
 					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 						window->camera.GetProjectionMatrix(), 
 						window->camera.GetViewMatrix(), 
-						light.TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
+						lights[i].TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
 						)));
 
 					mr->Draw(window->GetLightProgram());
 				}
 			}
-		}
-		
-		window->GetMeshProgram().Use();
-		for (auto& entity : entities)
-		{
-			if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr)) 
-			{
-				std::shared_ptr<Transform> tr;
-				bool hasTransform = entity->TryGetComponent(tr);
 
-				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
-					window->camera.GetProjectionMatrix(), 
-					window->camera.GetViewMatrix(),
-					hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
-				)));
-
-				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
-					window->camera.GetViewMatrix(),
-					hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
-				)));
-				mr->Draw(window->GetMeshProgram());
-			}
 		}
 
 		glfwSwapBuffers(window->GetWindowPtr());

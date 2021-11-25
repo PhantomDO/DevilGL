@@ -46,14 +46,17 @@ public:
 	glm::vec3 specular;
 
 	LightParameters parameters = LightParameters{};
+	LightParameters meshParameters = LightParameters{};
 	
 	Light()
-		: GameEntity(),	position(glm::vec3(0)), ambiant(glm::vec3(0)), diffuse(glm::vec3(0)), specular(glm::vec3(0))
+		:	GameEntity(),
+			position(glm::vec3(0)), ambiant(glm::vec3(0)), diffuse(glm::vec3(0)), specular(glm::vec3(0))
 	{
 	}
 
 	Light(const glm::vec3& position, const glm::vec3& ambiant, const glm::vec3& diffuse, const glm::vec3& specular)
-		: GameEntity(), position(position), ambiant(ambiant), diffuse(diffuse), specular(specular)
+		:	GameEntity(),
+			position(position), ambiant(ambiant), diffuse(diffuse), specular(specular)
 	{
 	}
 };

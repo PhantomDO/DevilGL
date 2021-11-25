@@ -17,6 +17,7 @@ void Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, i
 	if(action == GLFW_RELEASE) return;
 		
 	Window& window = *(reinterpret_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
+	auto tr = window.camera.GetComponent<Transform>();
 
 	const auto cameraSpeed = 0.05f;
 	
@@ -24,27 +25,27 @@ void Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, i
 	switch (key)
 	{
 	case GLFW_KEY_S:
-		window.camera.transform.GetPosition() = window.camera.transform.GetPosition() - window.camera.transform.GetForward() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() - tr->GetForward() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 	case GLFW_KEY_W:
-		window.camera.transform.GetPosition() += window.camera.transform.GetForward() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() + tr->GetForward() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 	case GLFW_KEY_A:
-		window.camera.transform.GetPosition() -= window.camera.transform.GetRight() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() - tr->GetRight() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 	case GLFW_KEY_D:
-		window.camera.transform.GetPosition() += window.camera.transform.GetRight() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() + tr->GetRight() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 	case GLFW_KEY_Q:
-		window.camera.transform.GetPosition() -= window.camera.transform.GetUp() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() - tr->GetUp() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 	case GLFW_KEY_E:
-		window.camera.transform.GetPosition() += window.camera.transform.GetUp() * cameraSpeed;
+		tr->SetPosition(tr->GetPosition() + tr->GetUp() * cameraSpeed);
 		window.camera.SetViewMatrix();
 		break;
 

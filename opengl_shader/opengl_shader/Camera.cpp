@@ -2,7 +2,7 @@
 
 Camera::Camera()
 	:	fov(45.0f), nearClip(0.1f), farClip(1000.0f),
-		up(glm::vec3(0,1,0)), transform(Transform()),
+		up(glm::vec3(0,1,0)),
 		m_ProjectionMatrix(), m_ViewMatrix()
 {
 }
@@ -16,5 +16,6 @@ void Camera::SetProjectionMatrix(const int& width, const int& height)
 
 void Camera::SetViewMatrix()
 {
-	m_ViewMatrix = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.GetForward(), up);
+	const auto tr = GetComponent<Transform>();
+	m_ViewMatrix = glm::lookAt(tr->GetPosition(), tr->GetPosition() + tr->GetForward(), up);
 }
