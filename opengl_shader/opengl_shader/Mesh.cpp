@@ -104,6 +104,8 @@ bool Mesh::LoadFromFile(const std::string& path)
 		else if (!line.compare(0, 3, "vt "))
 		{
 			iss >> trash;
+			iss >> trash;
+
 			glm::vec2 uv;			
 			for (int i = 0; i < 2; i++)
 			{
@@ -113,6 +115,7 @@ bool Mesh::LoadFromFile(const std::string& path)
 		}
 		else if (!line.compare(0, 3, "vn "))
 		{
+			iss >> trash;
 			iss >> trash;
 			glm::vec3 normal;			
 			for (int i = 0; i < 3; i++)
@@ -196,9 +199,9 @@ bool Mesh::LoadFromFile(const std::string& path)
 		auto position = tmpVertices[iter->first.vertex];
 		auto normal = iter->first.normal != -1 && !tmpNormals.empty()
 			? tmpNormals[iter->first.normal] : glm::vec3(0);
-		auto uv = iter->first.uv != -1 && !tmpNormals.empty()
+		auto uv = iter->first.uv != -1 && !tmpUvs.empty()
 			? tmpUvs[iter->first.uv] : glm::vec2(0);
-
+		
 		vertices[iter->second] = { position, normal, uv };
 	}
 

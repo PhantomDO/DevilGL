@@ -30,7 +30,7 @@ vec3 LightCalculation(Light l, vec3 n, Vertex v) // light, normal, vertex
 {
 	vec3 uv = texSample == 0u ? vec3(1) : vec3(texture(tex, v.uv));
 
-	vec3 ambiant = /*uv */ l.ambiant;
+//	vec3 ambiant = uv * l.ambiant;
 //
 //	vec3 direction = normalize(l.position - v.position);
 //	float difference = max(dot(n, direction), 0);
@@ -42,7 +42,7 @@ vec3 LightCalculation(Light l, vec3 n, Vertex v) // light, normal, vertex
 //	float specularValue = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 //	vec3 specular = 1.0 * specularValue * l.specular;
 
-	return (ambiant /*+ diffuse + specular*/);
+	return (uv/*ambiant + diffuse + specular*/);
 }
 
 void main()
@@ -55,6 +55,6 @@ void main()
 		result += LightCalculation(lights[i], normal, vertex);
 	}
 
-	color = vec4(vec3(texture(tex, vertex.uv)), 1.0);
+	color = vec4(result, 1.0);
 }
 

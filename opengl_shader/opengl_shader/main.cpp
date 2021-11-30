@@ -67,7 +67,7 @@ int main( int argc, char * argv[])
 			}
 
 			Debug::Log(meshPaths[meshChoice]);
-			auto mr = std::make_shared<MeshRenderer>();
+			auto mr = std::make_shared<MeshRenderer>();			
 			mr->SetMesh(Mesh(meshPaths[meshChoice]));
 			
 			if (!texturePaths.empty())
@@ -109,7 +109,7 @@ int main( int argc, char * argv[])
 		lights.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			Light l = Light(glm::vec3(0), glm::vec3(0.1f), 
+			Light l = Light(glm::vec3(0), glm::vec3(1.0f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
 			l.meshParameters = LightParameters(window->GetLightProgram().GetID());

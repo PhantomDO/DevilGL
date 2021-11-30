@@ -11,10 +11,10 @@
 
 struct LightParameters
 {
-	GLuint position;
-	GLuint ambiant;
-	GLuint diffuse;
-	GLuint specular;
+	GLint position;
+	GLint ambiant;
+	GLint diffuse;
+	GLint specular;
 
 	LightParameters() = default;
 
@@ -30,10 +30,10 @@ struct LightParameters
 
 	void Setup(const int& programId, const int& index = -1)
 	{
-		position = glGetUniformLocation(programId, index < 0 ? "light.position" : Tools::StringFormat("light[%d].position", index).c_str());
-		ambiant = glGetUniformLocation(programId, index < 0 ? "light.ambiant" : Tools::StringFormat("light[%d].ambiant", index).c_str());
-		diffuse = glGetUniformLocation(programId, index < 0 ? "light.diffuse" : Tools::StringFormat("light[%d].diffuse", index).c_str());
-		specular = glGetUniformLocation(programId, index < 0 ? "light.specular" : Tools::StringFormat("light[%d].specular", index).c_str());
+		position = glGetUniformLocation(programId, index < 0 ? "light.position" : Tools::StringFormat("lights[%d].position", index).c_str());
+		ambiant = glGetUniformLocation(programId, index < 0 ? "light.ambiant" : Tools::StringFormat("lights[%d].ambiant", index).c_str());
+		diffuse = glGetUniformLocation(programId, index < 0 ? "light.diffuse" : Tools::StringFormat("lights[%d].diffuse", index).c_str());
+		specular = glGetUniformLocation(programId, index < 0 ? "light.specular" : Tools::StringFormat("lights[%d].specular", index).c_str());
 	}
 };
 
