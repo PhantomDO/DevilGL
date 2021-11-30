@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 layout (location = 0) in vec3 position; // the position variable has attribute position 0
 layout (location = 1) in vec3 normal; // the normal variable has attribute position 1

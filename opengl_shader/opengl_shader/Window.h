@@ -21,7 +21,7 @@ public:
 	
 public:
 	
-	Window(const int& width, const int& height);
+	Window(const int& width, const int& height, bool debugGL = false);
 	Camera camera;
 	
 private:

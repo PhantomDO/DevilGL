@@ -29,8 +29,8 @@ int main( int argc, char * argv[])
 #endif
 	const int window_width = 800;
 	const int window_height = 600;
-	Window* window = new Window(window_width, window_height);
-		
+	Window* window = new Window(window_width, window_height, false);
+
 	// pointeur sur les touche du claver
 	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
 	//glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
@@ -99,13 +99,13 @@ int main( int argc, char * argv[])
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
+
+	window->SetLightProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
+		Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
 	
 	if (count > 0) 
-	{
-		window->SetLightProgram(ShaderProgram(
-			Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
-			Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
-		
+	{		
 		lights.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
@@ -121,8 +121,10 @@ int main( int argc, char * argv[])
 			lights.emplace_back(l);
 		}		
 	}
+
+	auto id = window->GetLightProgram().GetID();
 	
-	GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	//GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
 	window->GetLightProgram().Use();
@@ -201,7 +203,7 @@ int main( int argc, char * argv[])
 			}
 		}
 		
-		glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
+		//glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
 		glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
 
 		// Lights
@@ -242,12 +244,12 @@ int main( int argc, char * argv[])
 				
 				if (std::shared_ptr<MeshRenderer> mr; lights[i].TryGetComponent(mr))
 				{
-					std::shared_ptr<Transform> tr;
-					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
+					//std::shared_ptr<Transform> tr;
+					/*glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 						window->camera.GetProjectionMatrix(), 
 						window->camera.GetViewMatrix(), 
 						lights[i].TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
-						)));
+						)));*/
 
 					mr->Draw(window->GetLightProgram());
 				}

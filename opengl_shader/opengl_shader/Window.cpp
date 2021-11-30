@@ -5,8 +5,10 @@
 #include <GLFW/glfw3.h>
 
 #include "Helper.h"
+#include "Tools.h"
+#include "Debug.h"
 
-Window::Window(const int& width, const int& height)
+Window::Window(const int& width, const int& height, bool debugGL)
 {	
 	if (!glfwInit()) 
 	{
@@ -15,11 +17,16 @@ Window::Window(const int& width, const int& height)
 
 	glGetString(GL_VERSION); //Fonction de la bibliothèque OpenGL du système
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 16); //Multisample
 	glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
+
+	if (debugGL)
+	{
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	}
 
 	m_Width = width;
 	m_Height = height;
@@ -28,11 +35,10 @@ Window::Window(const int& width, const int& height)
 	{
 		Helper::Terminate("Impossible de créer la fenêtre !");
 	}
-	
-	glfwMakeContextCurrent(m_Window);
-	glEnable(GL_MULTISAMPLE);
-	glewExperimental = GL_TRUE;
 
+	glfwMakeContextCurrent(m_Window);
+	glewExperimental = GL_TRUE;
+	
 	GLenum err;
 	if((err = glewInit()) != GLEW_OK) /* Problem: glewInit failed, something is seriously wrong. */
 	{
@@ -40,6 +46,14 @@ Window::Window(const int& width, const int& height)
 	}
 	
 	Helper::RendererInfo();
+
+	glEnable(GL_MULTISAMPLE);
+	if (debugGL)
+	{
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(Tools::GLMessageCallback, 0);
+		Debug::Log("Enabled OpenGL debugging");
+	}
 
 	camera = Camera();
 

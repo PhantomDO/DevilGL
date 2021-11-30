@@ -36,16 +36,24 @@ struct Texture2D
 
 		pixels = image.accessPixels();
 
-		widthPow2 = 1 << static_cast<GLuint>(std::ceil(log2(static_cast<double>(width))));
-		heightPow2 = 1 << static_cast<GLuint>(std::ceil(log2(static_cast<double>(height))));
+		//widthPow2 = 1 << static_cast<GLuint>(std::ceil(log2(static_cast<double>(width))));
+		//heightPow2 = 1 << static_cast<GLuint>(std::ceil(log2(static_cast<double>(height))));
 
-		image.rescale(widthPow2, heightPow2, FILTER_BICUBIC);
+		//image.rescale(widthPow2, heightPow2, FILTER_BICUBIC);
 
-		glBindTextureUnit(n, name);
-		glTextureStorage2D(name, 1, GL_RGBA8, width, height);
-		glTextureSubImage2D(name, 0, 0, 0, width, height, GL_RGBA8, GL_UNSIGNED_BYTE, pixels);
+		const int mipmapLevel = n <= 1 ? 1 : n;
 
-		glGenerateTextureMipmap(GL_TEXTURE_2D);
+		//glBindTextureUnit(n, name);
+
+		glTextureStorage2D(name, mipmapLevel, GL_RGBA8, width, height);
+		glTextureSubImage2D(name, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+		Bind();
+
+		if (mipmapLevel > 1) 
+		{
+			glGenerateTextureMipmap(name);
+		}
 
 		glTextureParameteri(name, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTextureParameteri(name, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -55,8 +63,8 @@ struct Texture2D
 		Debug::Log("Texture loaded");
 	}
 
-	void Bind() const
+	void Bind(const int& n = 0) const
 	{
-		glBindTextureUnit(0, name);
+		glBindTextureUnit(n, name);
 	}
 };

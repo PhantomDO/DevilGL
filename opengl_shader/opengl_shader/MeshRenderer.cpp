@@ -73,7 +73,7 @@ void MeshRenderer::Draw(const ShaderProgram& shader) const
 {
 	if (m_Mesh == nullptr) return;
 
-	for (auto& tex : m_Textures)
+	for (const auto& tex : m_Textures)
 	{
 		tex->Bind();
 	}

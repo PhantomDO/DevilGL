@@ -73,7 +73,7 @@ ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
 {
 	const auto vertexCode = ReadShaderFile(vertex.path);
 	const auto vertexSource = const_cast<GLchar*>(vertexCode.c_str());
-	std::cout << vertexSource << std::endl;
+	//std::cout << vertexSource << std::endl;
 	const GLuint vertexShader = glCreateShader(vertex.type);
 	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertexShader);
@@ -85,7 +85,7 @@ ShaderProgram::ShaderProgram(const Shader& vertex, const Shader& fragment)
 
 	const auto fragmentCode = ReadShaderFile(fragment.path);
 	const auto fragmentSource = const_cast<GLchar*>(fragmentCode.c_str());
-	std::cout << fragmentSource << std::endl;
+	//std::cout << fragmentSource << std::endl;
 	const GLuint fragmentShader = glCreateShader(fragment.type);
 	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
 	glCompileShader(fragmentShader);
