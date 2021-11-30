@@ -4,11 +4,12 @@
 #include "Component.h"
 #include "Mesh.h"
 #include "ShaderProgram.h"
+#include "Texture2D.h"
 
 class MeshRenderer : public Component
 {
 private:
-
+	std::vector<std::shared_ptr<Texture2D>> m_Textures;
 	std::shared_ptr<Mesh> m_Mesh;
 	void Setup();
 
@@ -17,6 +18,11 @@ public:
 	std::shared_ptr<Mesh> GetMesh() const { return m_Mesh; }
 	void SetMesh(const Mesh& mesh);
 	void SetMesh(Mesh&& mesh);
+
+	std::vector<std::shared_ptr<Texture2D>> GetTextures() { return m_Textures; }
+	void AddTexture(const Texture2D& tex);
+	void AddTexture(Texture2D&& tex);
+	void RemoveTexture(const uint32_t& index);
 
 	//std::vector<Material> materials;
 	//Material GetPrincipalMaterial()

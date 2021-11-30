@@ -1,6 +1,5 @@
 ﻿#include <iostream>
 #include <string>
-#include <filesystem>
 
 #include "Entity.h"
 #include "GameEntity.h"
@@ -10,6 +9,7 @@
 #include "Mesh.h"
 #include "MeshRenderer.h"
 #include "ShaderProgram.h"
+#include "Texture2D.h"
 #include "Window.h"
 
 //#ifdef WIN32
@@ -43,20 +43,10 @@ int main( int argc, char * argv[])
 	glClearColor(background->r,	background->g,	background->b,	1.0f);
 
 	// mesh
-	std::stringstream ss;
-	ss << "Choose between this obj's : " << std::endl;
-	std::string path = "./models";
-	std::vector<std::string> objs;
-	int objCount = 0, objChoosen = -1;
-	for (const auto& entry : std::filesystem::directory_iterator(path))
-	{
-		std::string pathObject = entry.path().generic_u8string();
-		std::replace(pathObject.begin(), pathObject.end(), '\\', '/');
-		objs.emplace_back(pathObject);
-		ss << "\t- [" << objCount << "] " << pathObject << std::endl;
-		objCount++;
-	}
-	ss << "Which one (-1 if you don't choose) ? ";
+	std::vector<std::string> meshPaths;
+	auto meshList = Tools::ChoiceListFromDirectory("./models", meshPaths);
+	std::vector<std::string> texturePaths;
+	auto textureList = Tools::ChoiceListFromDirectory("./textures", texturePaths);
 
 	int count;
 	std::vector<std::shared_ptr<GameEntity>> entities;
@@ -65,20 +55,36 @@ int main( int argc, char * argv[])
 	entities.reserve(count);
 	for (int i = 0; i < count; ++i)
 	{
-		std::stringstream objPath;
 		auto entity = std::make_shared<GameEntity>();
 
-		while (objChoosen <= -1) 
+		if (!meshPaths.empty()) 
 		{
-			Debug::Log(ss.str());
-			std::cin >> objChoosen;
+			int meshChoice = -1;
+			while (meshChoice <= -1)
+			{
+				Debug::Log(meshList);
+				std::cin >> meshChoice;
+			}
+
+			Debug::Log(meshPaths[meshChoice]);
+			auto mr = std::make_shared<MeshRenderer>();
+			mr->SetMesh(Mesh(meshPaths[meshChoice]));
+			
+			if (!texturePaths.empty())
+			{
+				int texChoice = -1;
+				while (texChoice <= -1)
+				{
+					Debug::Log(textureList);
+					std::cin >> texChoice;
+				}
+
+				Debug::Log(texturePaths[texChoice]);
+				mr->AddTexture(Texture2D(texturePaths[texChoice]));
+			}
+
+			entity->AddComponent(mr);
 		}
-	
-		Debug::Log(objs[objChoosen]);
-		auto mr = std::make_shared<MeshRenderer>();
-		mr->SetMesh(Mesh(objs[objChoosen]));
-		entity->AddComponent(mr);
-		objChoosen = -1;
 
 		entities.emplace_back(entity);
 	}
@@ -103,7 +109,7 @@ int main( int argc, char * argv[])
 		lights.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			Light l = Light(glm::vec3(0), glm::vec3(0.1f, 0.1f, 0.1f), 
+			Light l = Light(glm::vec3(0), glm::vec3(0.1f), 
 				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
 			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
@@ -186,6 +192,10 @@ int main( int argc, char * argv[])
 						window->camera.GetViewMatrix(),
 						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
 					)));
+
+					glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), static_cast<GLuint>(mr->GetTextures().size()));
+					glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
+
 					mr->Draw(window->GetMeshProgram());
 				}
 			}

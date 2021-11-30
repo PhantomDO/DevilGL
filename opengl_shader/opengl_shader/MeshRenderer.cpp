@@ -2,6 +2,9 @@
 
 #include <functional>
 
+#include "Debug.h"
+#include "Helper.h"
+
 void MeshRenderer::Setup()
 {
 	if (m_Mesh == nullptr) return;
@@ -45,9 +48,35 @@ void MeshRenderer::SetMesh(Mesh&& mesh)
 	Setup();
 }
 
+void MeshRenderer::AddTexture(const Texture2D& tex)
+{
+	m_Textures.emplace_back(std::make_shared<Texture2D>(tex));
+}
+
+void MeshRenderer::AddTexture(Texture2D&& tex)
+{
+	m_Textures.emplace_back(std::make_shared<Texture2D>(std::move(tex)));
+}
+
+void MeshRenderer::RemoveTexture(const uint32_t& index)
+{
+	if (index > m_Textures.size() - 1)
+	{
+		Debug::LogError("Index out of range.");
+		return;
+	}
+
+	m_Textures.erase(m_Textures.begin() + index);
+}
+
 void MeshRenderer::Draw(const ShaderProgram& shader) const
 {
 	if (m_Mesh == nullptr) return;
+
+	for (auto& tex : m_Textures)
+	{
+		tex->Bind();
+	}
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, m_Mesh->indices.size(), GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
