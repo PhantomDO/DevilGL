@@ -1,17 +1,22 @@
 ﻿#include <iostream>
 #include <string>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
+#include "Entity.h"
+#include "GameEntity.h"
 #include "Helper.h"
 #include "Input.h"
+#include "Light.h"
+#include "Mesh.h"
+#include "MeshRenderer.h"
+#include "ShaderProgram.h"
+#include "Texture2D.h"
 #include "Window.h"
 
-#ifdef WIN32
+//#ifdef WIN32
 //This magic line is to force notebook computer that share NVidia and Intel graphics to use high performance GPU (NVidia).
 //Intel graphics doesn't support OpenGL > 1.2
 extern "C" _declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
-#endif
+//#endif
 
 const GLfloat PI = 3.1415926535897932384626433832795f;
 
@@ -22,187 +27,240 @@ int main( int argc, char * argv[])
   //Tous les fichiers de cette solution sont encodés en UTF-8.
 	SetConsoleOutputCP(65001);
 #endif
+	const int window_width = 640;
+	const int window_height = 480;
+	Window* window = new Window(window_width, window_height, false);
 
-	///#############################################################################
-	///                    Initialisation de la fenêtre
-	///#############################################################################
-
-	const int window_width = 800;
-	const int window_height = 600;
-
-	if (!glfwInit()) 
-	{
-		std::exit(EXIT_FAILURE);
-	}
-
-	glGetString(GL_VERSION); //Fonction de la bibliothèque OpenGL du système
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_SAMPLES, 16); //Multisample
-	//glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-
-	GLFWwindow* pWindow = glfwCreateWindow(window_width, window_height, "Hello World", NULL, NULL);
-	if (!pWindow) 
-	{
-		Helper::Terminate("Impossible de créer la fenêtre !");
-	}
-	
-	glfwMakeContextCurrent(pWindow);
-	glEnable(GL_MULTISAMPLE);
-	glewExperimental = GL_TRUE;
-
-	GLenum err;
-	if((err = glewInit()) != GLEW_OK) /* Problem: glewInit failed, something is seriously wrong. */
-	{
-		Helper::Terminate(std::string("Error: ") + reinterpret_cast<const char*>(glewGetErrorString(err)));
-	}
-	
-	Helper::RendererInfo();
-
-	Window windowData;
-	glfwSetWindowUserPointer(pWindow, &windowData);
-	
 	// pointeur sur les touche du claver
-	glfwSetKeyCallback(pWindow, Input::GetKeyDown);
-	glfwSetScrollCallback(pWindow, Input::GetScrolling);
-	glfwSetWindowSizeCallback(pWindow, Input::GetSize);
+	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
+	//glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
+	glfwSetWindowSizeCallback(window->GetWindowPtr(), Input::GetSize);
 
 	// COLOR
-	glm::vec3* backgroundColor = new glm::vec3(0.33f, 1.0f, 1.0f);
-	std::cout	<< backgroundColor->r << ", "
-				<< backgroundColor->g << ", "
-				<< backgroundColor->b << std::endl;
+	glm::vec3* background = new glm::vec3(0.33f, 1.0f, 1.0f);
+	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
+	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);	
+	glClearColor(background->r,	background->g,	background->b,	1.0f);
 
-	auto orangeColor = glm::vec3(0.39f, 1.0f, 1.0f);
-	auto blueColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	// mesh
+	std::vector<std::string> meshPaths;
+	auto meshList = Tools::ChoiceListFromDirectory("./models", meshPaths);
+	std::vector<std::string> texturePaths;
+	auto textureList = Tools::ChoiceListFromDirectory("./textures", texturePaths);
+
+	int count;
+	std::vector<std::shared_ptr<GameEntity>> entities;
+	std::cout << "How many entities do you want ?";
+	std::cin >> count;
+	entities.reserve(count);
+	for (int i = 0; i < count; ++i)
+	{
+		auto entity = std::make_shared<GameEntity>();
+
+		if (!meshPaths.empty()) 
+		{
+			int meshChoice = -1;
+			while (meshChoice <= -1)
+			{
+				Debug::Log(meshList);
+				std::cin >> meshChoice;
+			}
+
+			Debug::Log(meshPaths[meshChoice]);
+			auto mr = std::make_shared<MeshRenderer>();			
+			mr->SetMesh(Mesh(meshPaths[meshChoice]));
+			
+			if (!texturePaths.empty())
+			{
+				int texChoice = -1;
+				while (texChoice <= -1)
+				{
+					Debug::Log(textureList);
+					std::cin >> texChoice;
+				}
+
+				Debug::Log(texturePaths[texChoice]);
+				mr->AddTexture(Texture2D(texturePaths[texChoice]));
+			}
+
+			entity->AddComponent(mr);
+		}
+
+		entities.emplace_back(entity);
+	}
+
+	window->SetMeshProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
+		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
+
+	// light
+	count = 0;
+	std::vector<Light> lights;
+	std::cout << "How many light do you want 0, 1, 2 ?";
+	std::cin >> count;
+	if (count > 2) count = 2;
+
+	window->SetLightProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
+		Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
 	
-	glClearColor(
-		backgroundColor->r,
-		backgroundColor->g,
-		backgroundColor->b,
-		1.0f
-	);
+	if (count > 0) 
+	{		
+		lights.reserve(count);
+		for (int i = 0; i < count; ++i)
+		{
+			Light l = Light(glm::vec3(0), glm::vec3(1.0f), 
+				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
+			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
+			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
+			
+			auto mr = std::make_shared<MeshRenderer>();
+			mr->SetMesh(Mesh("./models/cube.obj"));
+			l.AddComponent(mr);
+			
+			lights.emplace_back(l);
+		}		
+	}
 
-	// VERTICES
-	GLfloat vertices[]{
-		-0.5f	,	0.25f,
-		 0.5f	,	0.25f,
-		 0.5f	,	-0.25f,
-		 -0.5f	,	-0.25f,
-
-		 -0.5f	,	-0.25f,
-		 0.5f	,	-0.25f,
-		 0.5f	,	-0.75f,
-		 -0.5f	,	-0.75f,
-	};
-
-	// VERTICES
-	GLuint indices[]{
-		0, 2, 3,
-		0, 1, 2,
-
-		4, 6, 7,
-		4, 5, 6,
-	};
-
-	// VAO
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	// VBO
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	auto id = window->GetLightProgram().GetID();
 	
-	// Attribution du tableau au GPU qui le transform en vec2
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(0));
-	glEnableVertexAttribArray(0);
+	//GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
-	// EBO
-	GLuint EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-		
-	// vertex reading stream	
-	std::string vertexStr = Helper::ReadShaderFile("TriangleVertexShader.glsl");
-	std::cout << vertexStr << std::endl;
-
-	// Creation du vertexShader
-	GLint vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	GLchar* vertexShaderSource = (GLchar*)(vertexStr).c_str();
-	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-	glCompileShader(vertexShader);
-
-	// test de compilation du vertex shader
-	Helper::ShaderCompilationTest(vertexShader);
-
-	// fragment reading stream
-	std::string fragmentStr = Helper::ReadShaderFile("TriangleFragmentShader.glsl");
-	std::cout << fragmentStr << std::endl;
-
-	// Creation du fragmentShader
-	GLint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	GLchar* fragmentShaderSource = (GLchar*)(fragmentStr).c_str();
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-
-	// test de compilation du fragment shader
-	Helper::ShaderCompilationTest(fragmentShader);
+	window->GetLightProgram().Use();
+	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
+	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
+	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
 	
-	// Creation du program
-	windowData.ProgramID = glCreateProgram();
-	glAttachShader(windowData.ProgramID, vertexShader);
-	glAttachShader(windowData.ProgramID, fragmentShader);
-	glLinkProgram(windowData.ProgramID);
-
-	// test de link du program avec les shader
-	Helper::ProgramShaderLinkedTest(windowData.ProgramID, vertexShader, fragmentShader);
-		
+	if (std::shared_ptr<MeshRenderer> mr; entities[0] != nullptr && entities[0]->TryGetComponent(mr))
+	{
+		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
+			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh()->bounds.size / 40.0f)));
+	}
+			
 	// pointeur sur la couleur de la fenetre
-	glfwSetWindowUserPointer(pWindow, backgroundColor);
-	/// pointeur sur la position de la souris
-	glfwSetCursorPosCallback(pWindow, Input::CursorPosCallback);
+	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
+	/// pointeur sur la m_Position de la souris
+	glfwSetCursorPosCallback(window->GetWindowPtr(), Input::CursorPosCallback);
 
 	//// utilise le programe creer precedement
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
-	glfwSetTime(0);
-	glClearColor(0,0,0,1);
-	
-	while (!glfwWindowShouldClose(pWindow))
+	glfwSetTime(0);	
+	//// change la couleur de la fenetre
+	glClearColor(1.f, 0.08f, 0.58f, 1.f);
+
+	const GLint mvpID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
+	const GLint mvID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mv");
+
+	// pointeur sur la camera de la fenetre
+	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
+	// pointeur sur la mouse wheel
+	glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
+	// pointeur sur les touche du claver
+	glfwSetKeyCallback(window->GetWindowPtr(), Input::GetKeyDown);
+
+
+	auto meshSize = glm::distance(entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.min, 
+		entities[0]->GetComponent<MeshRenderer>()->GetMesh()->bounds.max);
+
+	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
 		glfwPollEvents();
-
-		// change la couleur de la fenetre
-		glClearColor(backgroundColor->r,	backgroundColor->g,	backgroundColor->b,	1.0f);
 		// remet la couleur par default
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		GLfloat time = static_cast<GLfloat>(glfwGetTime());
+
+		// Mesh
+		if (!entities.empty()) 
+		{
+			window->GetMeshProgram().Use();
+			for (auto& entity : entities)
+			{
+				if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr))
+				{
+					std::shared_ptr<Transform> tr;
+					bool hasTransform = entity->TryGetComponent(tr);
+
+					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
+						window->camera.GetProjectionMatrix(),
+						window->camera.GetViewMatrix(),
+						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+					)));
+
+					glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
+						window->camera.GetViewMatrix(),
+						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
+					)));
+
+					glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), static_cast<GLuint>(mr->GetTextures().size()));
+					glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
+
+					mr->Draw(window->GetMeshProgram());
+				}
+			}
+		}
 		
-		glUseProgram(windowData.ProgramID);
+		//glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
+		glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
 
-		// affiche le triangle depuis le vbo
-		glDrawArrays(GL_TRIANGLES, 0, 2);
+		// Lights
+		if (!lights.empty())
+		{
+			window->GetLightProgram().Use();
+			
+			// Calcul m_Position des lights;
+			for (size_t i = 0; i < lights.size(); ++i)
+			{
+				float xorz = cos(time * 2.0f) * 0.5f * meshSize;
+				float yorx = cos(time / 2.0f) * 0.5f * meshSize;
+				float zory = sin(time * 2.0f) * 0.5f * meshSize;
 
-		// affiche le rect depuis le ebo
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, (GLvoid*)(0));
-		// affiche ls triangles rempli
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		// affiche le rect depuis le ebo
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (GLvoid*)(0));
-		// affiche ls triangles en fil de fer
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				if (i % 2 == 0) 
+				{
+					lights[i].position.x = xorz;
+					lights[i].position.y = yorx;
+					lights[i].position.z = zory;
+				}
+				else
+				{
+					lights[i].position.z = xorz;
+					lights[i].position.x = yorx;
+					lights[i].position.y = zory;
+				}
+				
+				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i].position, 1.0f);
+				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
+				
+				glUniform3fv(lights[i].parameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].parameters.ambiant, 1, glm::value_ptr(lights[i].ambiant));
+				glUniform3fv(lights[i].parameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+				glUniform3fv(lights[i].parameters.specular, 1, glm::value_ptr(lights[i].specular));
 
-		glfwSwapBuffers(pWindow);
+				glUniform3fv(lights[i].meshParameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].meshParameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+				
+				if (std::shared_ptr<MeshRenderer> mr; lights[i].TryGetComponent(mr))
+				{
+					//std::shared_ptr<Transform> tr;
+					/*glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
+						window->camera.GetProjectionMatrix(), 
+						window->camera.GetViewMatrix(), 
+						lights[i].TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
+						)));*/
+
+					mr->Draw(window->GetLightProgram());
+				}
+			}
+
+		}
+
+		glfwSwapBuffers(window->GetWindowPtr());
 	}
-	
-	glfwTerminate();
 
-	return 0;
+	glfwDestroyWindow(window->GetWindowPtr());
+	glfwTerminate();
+	std::exit(EXIT_SUCCESS);
 }
