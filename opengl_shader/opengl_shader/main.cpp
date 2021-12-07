@@ -27,8 +27,8 @@ int main( int argc, char * argv[])
   //Tous les fichiers de cette solution sont encodés en UTF-8.
 	SetConsoleOutputCP(65001);
 #endif
-	const int window_width = 800;
-	const int window_height = 600;
+	const int window_width = 640;
+	const int window_height = 480;
 	Window* window = new Window(window_width, window_height, false);
 
 	// pointeur sur les touche du claver
