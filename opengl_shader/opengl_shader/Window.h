@@ -23,6 +23,8 @@ public:
 	
 	Window(const int& width, const int& height, bool debugGL = false);
 	Camera camera;
+
+	glm::vec2 mousePosition;
 	
 private:
 

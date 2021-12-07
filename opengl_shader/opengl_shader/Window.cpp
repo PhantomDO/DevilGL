@@ -59,7 +59,7 @@ Window::Window(const int& width, const int& height, bool debugGL)
 
 	if (std::shared_ptr<Transform> tr; camera.TryGetComponent(tr))
 	{
-		tr->SetPosition(glm::vec3(0, 0, 10));
+		tr->position = glm::vec3(0, 0, 10);
 		camera.SetProjectionMatrix(width, height);
 		camera.SetViewMatrix();
 	}
@@ -67,6 +67,9 @@ Window::Window(const int& width, const int& height, bool debugGL)
 	glViewport(0,0, m_Width, m_Height);
 
 	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	mousePosition = glm::vec2(width / 2, height / 2);
 
 }
 

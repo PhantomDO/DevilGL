@@ -10,6 +10,7 @@
 #include "MeshRenderer.h"
 #include "ShaderProgram.h"
 #include "Texture2D.h"
+#include "Time.h"
 #include "Window.h"
 
 //#ifdef WIN32
@@ -19,6 +20,7 @@ extern "C" _declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 //#endif
 
 const GLfloat PI = 3.1415926535897932384626433832795f;
+
 
 int main( int argc, char * argv[])
 {
@@ -140,7 +142,7 @@ int main( int argc, char * argv[])
 			
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
-	/// pointeur sur la m_Position de la souris
+	/// pointeur sur la position de la souris
 	glfwSetCursorPosCallback(window->GetWindowPtr(), Input::CursorPosCallback);
 
 	//// utilise le programe creer precedement
@@ -167,12 +169,15 @@ int main( int argc, char * argv[])
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
+		// per frame time logic
+		float currentFrame = static_cast<float>(glfwGetTime());
+		Time::deltaTime = currentFrame - Time::lastFrame;
+		Time::lastFrame = currentFrame;
+
 		glfwPollEvents();
 		// remet la couleur par default
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		GLfloat time = static_cast<GLfloat>(glfwGetTime());
-
+		
 		// Mesh
 		if (!entities.empty()) 
 		{
@@ -195,7 +200,8 @@ int main( int argc, char * argv[])
 						hasTransform ? tr->GetModelMatrix() : glm::mat4(1.0f)
 					)));
 
-					glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), static_cast<GLuint>(mr->GetTextures().size()));
+					glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), 
+						static_cast<GLuint>(mr->GetTextures().size()));
 					glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
 
 					mr->Draw(window->GetMeshProgram());
@@ -211,12 +217,12 @@ int main( int argc, char * argv[])
 		{
 			window->GetLightProgram().Use();
 			
-			// Calcul m_Position des lights;
+			// Calcul position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
-				float xorz = cos(time * 2.0f) * 0.5f * meshSize;
-				float yorx = cos(time / 2.0f) * 0.5f * meshSize;
-				float zory = sin(time * 2.0f) * 0.5f * meshSize;
+				float xorz = cos(currentFrame * 2.0f) * 0.5f * meshSize;
+				float yorx = cos(currentFrame / 2.0f) * 0.5f * meshSize;
+				float zory = sin(currentFrame * 2.0f) * 0.5f * meshSize;
 
 				if (i % 2 == 0) 
 				{
@@ -244,17 +250,9 @@ int main( int argc, char * argv[])
 				
 				if (std::shared_ptr<MeshRenderer> mr; lights[i].TryGetComponent(mr))
 				{
-					//std::shared_ptr<Transform> tr;
-					/*glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
-						window->camera.GetProjectionMatrix(), 
-						window->camera.GetViewMatrix(), 
-						lights[i].TryGetComponent(tr) ? tr->GetModelMatrix() : glm::mat4(1.0f)
-						)));*/
-
 					mr->Draw(window->GetLightProgram());
 				}
 			}
-
 		}
 
 		glfwSwapBuffers(window->GetWindowPtr());

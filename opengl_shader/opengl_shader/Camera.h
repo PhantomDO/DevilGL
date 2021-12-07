@@ -13,11 +13,19 @@ public:
 	GLfloat fov;
 	GLfloat nearClip;
 	GLfloat farClip;
-	glm::vec3 up;
+
+	GLfloat yaw;
+	GLfloat pitch;
+	GLfloat speed;
+	GLfloat sensitivity;
 
 	Camera();
 
 public:
+	void ProcessKeyboardEvent(const int& key, const float& dt);
+	void ProcessMouseMouvement(glm::vec2& offset, GLboolean constrain = true);
+	void ProcessMouseScroll(const float& yFov);
+
 	glm::mat4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
 	void SetProjectionMatrix(const int& width, const int& height);
 
@@ -27,4 +35,6 @@ public:
 private:
 	glm::mat4 m_ProjectionMatrix;
 	glm::mat4 m_ViewMatrix;
+
+	void UpdateView();
 };
