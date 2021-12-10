@@ -5,16 +5,24 @@
 #include "MeshRenderer.h"
 #include "Transform.h"
 
-static int Entity_Count = -1;
-
 class Entity
 {
+
 protected:
 	int m_InstanceID;
+	bool m_RootInScene;
 	std::vector<std::shared_ptr<Component>> m_Components;
 
 public:
+	static int ENTITY_COUNT;
+
+public:
+	std::string name;
+	std::string tag;
+
+public:
 	int GetInstanceID() const { return m_InstanceID; }
+	bool CompareTag(const std::string& tag) const { return this->tag == tag; }
 
 	template <class Arg>
 	std::shared_ptr<Arg> AddComponent(const std::shared_ptr<Arg>& component);
@@ -27,8 +35,8 @@ public:
 
 public:
 
-	Entity()
-		: m_InstanceID(Entity_Count++)
+	Entity(std::string&& name = "")
+		: m_InstanceID(++ENTITY_COUNT), m_RootInScene(false), name(std::move(name))
 	{
 	}
 };
