@@ -8,6 +8,8 @@
 #include "Tools.h"
 #include "Debug.h"
 
+using namespace Engine;
+
 Window::Window(const int& width, const int& height, bool debugGL)
 {	
 	if (!glfwInit()) 
@@ -55,9 +57,9 @@ Window::Window(const int& width, const int& height, bool debugGL)
 		Debug::Log("Enabled OpenGL debugging");
 	}
 
-	camera = Camera();
+	camera = Camera("Main Camera");
 
-	if (std::shared_ptr<Transform> tr; camera.TryGetComponent(tr))
+	if (std::optional<Transform> tr; camera.TryGetComponent(tr))
 	{
 		tr->position = glm::vec3(0, 0, 10);
 		camera.SetProjectionMatrix(width, height);

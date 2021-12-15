@@ -1,11 +1,15 @@
 ﻿#pragma once
 #include <GL/glew.h>
 
-class Time
+namespace Engine
 {
-public:
-	static float deltaTime;
-	static float lastFrame;
 
-	Time() = default;
-};
+	class Time
+	{
+	public:
+		static float deltaTime;
+		static float lastFrame;
+
+		Time() = default;
+	};
+}

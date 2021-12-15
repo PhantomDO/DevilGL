@@ -7,30 +7,33 @@
 #include "Camera.h"
 #include "ShaderProgram.h"
 
-class Window
+namespace Engine
 {
-public:
+	class Window
+	{
+	public:
 
-	ShaderProgram GetMeshProgram() const { return m_MeshProgram; }
-	void SetMeshProgram(const ShaderProgram& meshProgram) { m_MeshProgram = meshProgram; }
-	
-	ShaderProgram GetLightProgram() const { return m_LightProgram; }
-	void SetLightProgram(const ShaderProgram& lightProgram) { m_LightProgram = lightProgram; }
+		ShaderProgram GetMeshProgram() const { return m_MeshProgram; }
+		void SetMeshProgram(const ShaderProgram& meshProgram) { m_MeshProgram = meshProgram; }
 
-	GLFWwindow* GetWindowPtr() const { return m_Window; }
-	
-public:
-	
-	Window(const int& width, const int& height, bool debugGL = false);
-	Camera camera;
+		ShaderProgram GetLightProgram() const { return m_LightProgram; }
+		void SetLightProgram(const ShaderProgram& lightProgram) { m_LightProgram = lightProgram; }
 
-	glm::vec2 mousePosition;
-	
-private:
+		GLFWwindow* GetWindowPtr() const { return m_Window; }
 
-	int m_Width, m_Height;
+	public:
 
-	ShaderProgram m_MeshProgram {};
-	ShaderProgram m_LightProgram {};
-	GLFWwindow* m_Window;
-};
+		Window(const int& width, const int& height, bool debugGL = false);
+		Camera camera;
+
+		glm::vec2 mousePosition{};
+
+	private:
+
+		int m_Width, m_Height;
+
+		ShaderProgram m_MeshProgram{};
+		ShaderProgram m_LightProgram{};
+		GLFWwindow* m_Window;
+	};
+}

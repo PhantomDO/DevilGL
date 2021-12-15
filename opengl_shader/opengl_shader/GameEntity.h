@@ -1,12 +1,24 @@
 ﻿#pragma once
 #include "Entity.h"
 
-class GameEntity : public Entity
+namespace Engine
 {
-public:
-	GameEntity()
-		: Entity()
+	
+	class GameEntity : public Entity
 	{
-		AddComponent(std::make_shared<Transform>());
-	}
-};
+	private:
+
+		Transform m_Transform;
+
+	public:
+
+		Transform GetTransform() { return m_Transform; }
+
+	public:
+		GameEntity(const std::string& name = "Game Entity") : Entity(name)
+		{
+			AddComponent<Transform>();
+			m_Transform = GetComponent<Transform>();
+		}
+	};
+}

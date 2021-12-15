@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include <GL/glew.h>
-#include <FreeImagePlus.h>
 #include <cmath>
+#include "FreeImagePlus.h"
 #include <string>
+#include <GL/glew.h>
 
 #include "Debug.h"
 
@@ -13,6 +13,11 @@ struct Texture2D
 	GLuint name;
 	unsigned char* pixels;
 	fipImage image;
+
+	//virtual ~Texture2D()
+	//{
+	//	delete[] pixels;
+	//}
 
 	Texture2D(const std::string& path, const int& n = 0)
 	{
@@ -25,7 +30,7 @@ struct Texture2D
 
 		if (!dataLoaded)
 		{
-			Debug::LogError("Can't load this image.");
+			Engine::Debug::LogError("Can't load this image.");
 			return;
 		}
 
@@ -60,7 +65,7 @@ struct Texture2D
 		glTextureParameteri(name, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteri(name, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		Debug::Log("Texture loaded");
+		Engine::Debug::Log("Texture loaded");
 	}
 
 	void Bind(const int& n = 0) const

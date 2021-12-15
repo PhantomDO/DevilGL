@@ -2,25 +2,32 @@
 #include <iostream>
 #include <GL/glew.h>
 
-#include "Shader.h"
-
-class ShaderProgram
+namespace Engine
 {
-public:
+	struct Shader
+	{
+		GLenum type;
+		std::string path;
+	};
 
-	ShaderProgram() = default;
-	ShaderProgram(const Shader& vertex, const Shader& fragment);
-	GLint GetID() const { return m_ID; }
-	void Use() const { glUseProgram(m_ID); }
+	class ShaderProgram
+	{
+	public:
 
-public:
+		ShaderProgram() = default;
+		ShaderProgram(const Shader& vertex, const Shader& fragment);
+		GLint GetID() const { return m_ID; }
+		void Use() const { glUseProgram(m_ID); }
 
-	static std::string ReadShaderFile(const std::string& shader);
+	public:
 
-	static bool ShaderCompilationTest(const GLuint& shader);	
-	static bool ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
-	
-private:
+		static std::string ReadShaderFile(const std::string& shader);
 
-	GLint m_ID;
-};
+		static bool ShaderCompilationTest(const GLuint& shader);
+		static bool ProgramShaderLinkedTest(const GLint& program, const GLuint& vertexShader, const GLuint& fragmentShader);
+
+	private:
+
+		GLint m_ID;
+	};
+}

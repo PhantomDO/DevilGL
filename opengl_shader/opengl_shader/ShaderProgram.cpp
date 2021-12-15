@@ -7,6 +7,7 @@
 
 #include "Helper.h"
 
+using namespace Engine;
 
 bool ShaderProgram::ShaderCompilationTest(const GLuint& shader)
 {

@@ -1,3 +1,3 @@
 ﻿#include "Entity.h"
 
-int Entity::ENTITY_COUNT = -1;
+int Engine::Entity::ENTITY_COUNT = -1;

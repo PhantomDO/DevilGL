@@ -2,11 +2,11 @@
 
 #include "Time.h"
 
-void Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
+void Engine::Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 {
 	int windowSizeX, windowSizeY;
 
-	Window& window = *(reinterpret_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
+	Engine::Window& window = *(reinterpret_cast<Engine::Window*>(glfwGetWindowUserPointer(pWindow)));
 	//glm::vec3& color = *(static_cast<glm::vec3*>(glfwGetWindowUserPointer(pWindow)));
 		
 	// recupere taille de la fenetre
@@ -20,12 +20,12 @@ void Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 	//color = Helper::HSVtoRGB(glm::vec3(color.r, static_cast<float>(x/windowSizeX), static_cast<float>(y/windowSizeY)));
 }
 
-void Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
+void Engine::Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods)
 {
 	if(action == GLFW_RELEASE) return;
-		
-	Window& window = *(reinterpret_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
-	window.camera.ProcessKeyboardEvent(key, Time::deltaTime);
+
+	Engine::Window& window = *(reinterpret_cast<Engine::Window*>(glfwGetWindowUserPointer(pWindow)));
+	window.camera.ProcessKeyboardEvent(key, Engine::Time::deltaTime);
 	
 	// Trouver l'utilité
 	switch (key)
@@ -40,7 +40,7 @@ void Input::GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, i
 	}
 }
 
-void Input::GetScrolling(GLFWwindow* pWindow, double x, double y)
+void Engine::Input::GetScrolling(GLFWwindow* pWindow, double x, double y)
 {
 	Window& window = *(reinterpret_cast<Window*>(glfwGetWindowUserPointer(pWindow)));
 
@@ -50,7 +50,7 @@ void Input::GetScrolling(GLFWwindow* pWindow, double x, double y)
 	window.camera.SetProjectionMatrix(width, height);
 }
 
-void Input::GetSize(GLFWwindow* pWindow, int width, int height)
+void Engine::Input::GetSize(GLFWwindow* pWindow, int width, int height)
 {
 	if(width * height == 0) return;
 

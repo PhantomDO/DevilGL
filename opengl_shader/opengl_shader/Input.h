@@ -7,14 +7,18 @@
 #include "Helper.h"
 #include "Window.h"
 
-class Input
+namespace Engine
 {
-public:
-	static void CursorPosCallback(GLFWwindow* pWindow, double x, double y);
 
-	static void GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods);
+	class Input
+	{
+	public:
+		static void CursorPosCallback(GLFWwindow* pWindow, double x, double y);
 
-	static void GetScrolling(GLFWwindow* pWindow, double x, double y);
+		static void GetKeyDown(GLFWwindow* pWindow, int key, int scanCode, int action, int mods);
 
-	static void GetSize(GLFWwindow* pWindow, int width, int height);
-};
+		static void GetScrolling(GLFWwindow* pWindow, double x, double y);
+
+		static void GetSize(GLFWwindow* pWindow, int width, int height);
+	};
+}

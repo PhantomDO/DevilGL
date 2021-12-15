@@ -9,6 +9,8 @@
 #include "Debug.h"
 #include "Helper.h"
 
+using namespace Engine;
+
 Mesh::Mesh(const std::string& path)
 {
 	if (!LoadFromFile(path))

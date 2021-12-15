@@ -5,7 +5,19 @@
 #include "Debug.h"
 #include "Helper.h"
 
-void MeshRenderer::Setup()
+CLASS_DEFINITION(Engine::Component, Engine::MeshRenderer)
+
+void to_json(nlohmann::json&, const Engine::MeshRenderer&)
+{
+	Engine::Debug::Log("called to_json for MeshRenderer");
+}
+
+void from_json(nlohmann::json const&, Engine::MeshRenderer&)
+{
+	Engine::Debug::Log("called from_json for MeshRenderer");
+}
+
+void Engine::MeshRenderer::Setup()
 {
 	if (m_Mesh == nullptr) return;
 
@@ -36,29 +48,18 @@ void MeshRenderer::Setup()
 	glBindVertexArray(0);
 }
 
-void MeshRenderer::SetMesh(const Mesh& mesh)
+void Engine::MeshRenderer::SetMesh(Mesh&& mesh)
 {
-	m_Mesh = std::make_shared<Mesh>(mesh);
+	m_Mesh = std::make_unique<Mesh>(std::move(mesh));
 	Setup();
 }
 
-void MeshRenderer::SetMesh(Mesh&& mesh)
+void Engine::MeshRenderer::AddTexture(Texture2D&& tex)
 {
-	m_Mesh = std::make_shared<Mesh>(std::move(mesh));
-	Setup();
+	m_Textures.emplace_back(std::make_shared<Texture2D>((tex)));
 }
 
-void MeshRenderer::AddTexture(const Texture2D& tex)
-{
-	m_Textures.emplace_back(std::make_shared<Texture2D>(tex));
-}
-
-void MeshRenderer::AddTexture(Texture2D&& tex)
-{
-	m_Textures.emplace_back(std::make_shared<Texture2D>(std::move(tex)));
-}
-
-void MeshRenderer::RemoveTexture(const uint32_t& index)
+void Engine::MeshRenderer::RemoveTexture(const uint32_t& index)
 {
 	if (index > m_Textures.size() - 1)
 	{
@@ -69,7 +70,7 @@ void MeshRenderer::RemoveTexture(const uint32_t& index)
 	m_Textures.erase(m_Textures.begin() + index);
 }
 
-void MeshRenderer::Draw(const ShaderProgram& shader) const
+void Engine::MeshRenderer::Draw(const ShaderProgram& shader) const
 {
 	if (m_Mesh == nullptr) return;
 
@@ -83,12 +84,12 @@ void MeshRenderer::Draw(const ShaderProgram& shader) const
 	glBindVertexArray(0);
 }
 
-glm::mat4 MeshRenderer::GetMVPMatrix(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& model)
+glm::mat4 Engine::MeshRenderer::GetMVPMatrix(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& model)
 {
 	return projection * view * model;
 }
 
-glm::mat4 MeshRenderer::GetMVMatrix(const glm::mat4& view, const glm::mat4& model)
+glm::mat4 Engine::MeshRenderer::GetMVMatrix(const glm::mat4& view, const glm::mat4& model)
 {
 	return view * model;
 }

@@ -1,7 +1,14 @@
 ﻿#pragma once
 
-struct Scene
+namespace Engine
 {
-public:
-	
-};
+
+
+
+	struct Scene
+	{
+	public:
+
+	};
+
+}

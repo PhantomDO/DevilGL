@@ -2,14 +2,14 @@
 
 #include "Debug.h"
 
-void Helper::Terminate(const std::string& err)
+void Engine::Helper::Terminate(const std::string& err)
 {
 	Debug::LogError(err);
 	glfwTerminate();
 	std::exit(EXIT_FAILURE);
 }
 
-void Helper::RendererInfo()
+void Engine::Helper::RendererInfo()
 {
 	const char* glString;
 	std::stringstream ss;
@@ -29,7 +29,7 @@ void Helper::RendererInfo()
 	Debug::Log(ss.str());
 }
 
-const char* Helper::GetGLError()
+const char* Engine::Helper::GetGLError()
 {
 	switch(glGetError())
 	{
@@ -66,7 +66,7 @@ std::string Helper::GetShaderSourceFromRessource(const std::wstring& filename)
 	return std::string{ reinterpret_cast<const char*>(LockResource(hRes)), szRes };
 }
 #else
-std::string Helper::GetShaderSourceFromRessource(const std::string& filename)
+std::string Engine::Helper::GetShaderSourceFromRessource(const std::string& filename)
 {
 	const std::ifstream shaderFile{ filename };
 	if(!shaderFile.is_open()) return std::string{};

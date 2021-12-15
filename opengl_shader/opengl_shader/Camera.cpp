@@ -3,18 +3,17 @@
 #include <GLFW/glfw3.h>
 
 #include "Bounds.h"
-#include "Bounds.h"
 
-Camera::Camera()
-	:	fov(45.0f), nearClip(0.1f), farClip(1000.0f),
+Engine::Camera::Camera(const std::string& name)
+	:	GameEntity(name), fov(45.0f), nearClip(0.1f), farClip(1000.0f),
 		m_ProjectionMatrix(), m_ViewMatrix(),
 		yaw(-90.f), pitch(0.f), speed(2.5f), sensitivity(0.1f)
 {
 }
 
-void Camera::ProcessKeyboardEvent(const int& key, const float& dt)
+void Engine::Camera::ProcessKeyboardEvent(const int& key, const float& dt)
 {
-	if (std::shared_ptr<Transform> tr; TryGetComponent(tr))
+	if (std::optional<Transform> tr; TryGetComponent(tr))
 	{
 		const GLfloat velocity = dt * speed;
 		switch (key)
@@ -40,7 +39,7 @@ void Camera::ProcessKeyboardEvent(const int& key, const float& dt)
 	}
 }
 
-void Camera::ProcessMouseMouvement(glm::vec2& offset, GLboolean constrain)
+void Engine::Camera::ProcessMouseMouvement(glm::vec2& offset, GLboolean constrain)
 {
 	offset *= sensitivity;
 
@@ -53,34 +52,34 @@ void Camera::ProcessMouseMouvement(glm::vec2& offset, GLboolean constrain)
 	UpdateView();
 }
 
-void Camera::ProcessMouseScroll(const float& yFov)
+void Engine::Camera::ProcessMouseScroll(const float& yFov)
 {
 	fov -= yFov;
 	if(fov < 1.0f) fov = 1.0f;
 	if(fov > 45.0f) fov = 45.0f;
 }
 
-void Camera::UpdateView()
+void Engine::Camera::UpdateView()
 {
 	const glm::quat qPitch = glm::angleAxis(glm::radians(pitch), glm::vec3(1, 0, 0));
 	const glm::quat qYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0, 1, 0));
 	//const glm::quat qRoll = glm::angleAxis(glm::radians(roll), glm::vec3(0, 0, 1));
 
 	const glm::quat orientation = qPitch * qYaw;
-	const auto tr = GetComponent<Transform>();
-	tr->rotation = glm::normalize(orientation);
+	auto tr = GetComponent<Transform>();
+	tr.rotation = glm::normalize(orientation);
 	SetViewMatrix();
 }
 
-void Camera::SetProjectionMatrix(const int& width, const int& height)
+void Engine::Camera::SetProjectionMatrix(const int& width, const int& height)
 {
 	m_ProjectionMatrix = glm::perspective(glm::radians(fov),
 	                                      static_cast<float>(width) / static_cast<float>(height),
 	                                      nearClip, farClip);
 }
 
-void Camera::SetViewMatrix()
+void Engine::Camera::SetViewMatrix()
 {
 	const auto tr = GetComponent<Transform>();
-	m_ViewMatrix = glm::lookAt(tr->position, tr->position + tr->GetForward(), tr->GetWorldUp());
+	m_ViewMatrix = glm::lookAt(tr.position, tr.position + tr.GetForward(), tr.GetWorldUp());
 }
