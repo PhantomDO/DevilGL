@@ -8,11 +8,11 @@ namespace Engine
 	{
 	private:
 
-		Transform m_Transform;
+		Transform& m_Transform;
 
 	public:
 
-		Transform GetTransform() { return m_Transform; }
+		Transform& GetTransform() const { return m_Transform; }
 
 	public:
 		GameEntity(const std::string& name = "Game Entity") : Entity(name)

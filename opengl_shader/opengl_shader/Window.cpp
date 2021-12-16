@@ -59,12 +59,10 @@ Window::Window(const int& width, const int& height, bool debugGL)
 
 	camera = Camera("Main Camera");
 
-	if (std::optional<Transform> tr; camera.TryGetComponent(tr))
-	{
-		tr->position = glm::vec3(0, 0, 10);
-		camera.SetProjectionMatrix(width, height);
-		camera.SetViewMatrix();
-	}
+	auto tr = camera.GetTransform();
+	tr.position = glm::vec3(0, 0, 10);
+	camera.SetProjectionMatrix(width, height);
+	camera.SetViewMatrix();
 
 	glViewport(0,0, m_Width, m_Height);
 

@@ -76,8 +76,7 @@ int main( int argc, char * argv[])
 
 			Debug::Log(meshPaths[meshChoice]);
 			entity->AddComponent<MeshRenderer>();
-			auto mr = entity->GetComponent<MeshRenderer>();
-
+			auto& mr = entity->GetComponent<MeshRenderer>();
 			mr.SetMesh(Mesh(meshPaths[meshChoice]));
 			
 			if (!texturePaths.empty())
@@ -126,7 +125,7 @@ int main( int argc, char * argv[])
 			l->meshParameters = LightParameters(window->GetLightProgram().GetID());
 			l->AddComponent<MeshRenderer>();
 
-			auto mr = l->GetComponent<MeshRenderer>();
+			auto& mr = l->GetComponent<MeshRenderer>();
 			mr.SetMesh(Mesh("./models/cube.obj"));
 			
 			lights.emplace_back(std::move(l));
@@ -143,7 +142,7 @@ int main( int argc, char * argv[])
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
 	
-	if (std::optional<MeshRenderer> mr; entities[0] != nullptr && entities[0]->TryGetComponent(mr))
+	if (std::shared_ptr<MeshRenderer> mr; entities[0] != nullptr && entities[0]->TryGetComponent(mr))
 	{
 		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
 			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh().bounds.size / 40.0f)));
@@ -172,9 +171,8 @@ int main( int argc, char * argv[])
 	// pointeur sur les touche du claver
 	glfwSetKeyCallback(window->GetWindowPtr(), Engine::Input::GetKeyDown);
 
-
-	auto meshSize = glm::distance(entities[0]->GetComponent<MeshRenderer>().GetMesh().bounds.min, 
-		entities[0]->GetComponent<MeshRenderer>().GetMesh().bounds.max);
+	auto& mr = entities[0]->GetComponent<MeshRenderer>();
+	auto meshSize = glm::distance(mr.GetMesh().bounds.min, mr.GetMesh().bounds.max);
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
@@ -193,7 +191,7 @@ int main( int argc, char * argv[])
 			window->GetMeshProgram().Use();
 			for (auto& entity : entities)
 			{
-				if (std::optional<MeshRenderer> mr; entity->TryGetComponent(mr))
+				if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr))
 				{
 					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
 						window->camera.GetProjectionMatrix(),
@@ -254,7 +252,7 @@ int main( int argc, char * argv[])
 				glUniform3fv(lights[i]->meshParameters.position, 1, glm::value_ptr(lights[i]->position));
 				glUniform3fv(lights[i]->meshParameters.diffuse, 1, glm::value_ptr(lights[i]->diffuse));
 				
-				if (std::optional<MeshRenderer> mr; lights[i]->TryGetComponent(mr))
+				if (std::shared_ptr<MeshRenderer> mr; lights[i]->TryGetComponent(mr))
 				{
 					mr->Draw(window->GetLightProgram());
 				}

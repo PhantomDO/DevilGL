@@ -48,6 +48,16 @@ void Engine::MeshRenderer::Setup()
 	glBindVertexArray(0);
 }
 
+Engine::Mesh& Engine::MeshRenderer::GetMesh()
+{
+	if (m_Mesh != nullptr)
+	{
+		return *static_cast<Mesh*>(m_Mesh.get());
+	}
+	
+	return *std::unique_ptr<Mesh>(nullptr);
+}
+
 void Engine::MeshRenderer::SetMesh(Mesh&& mesh)
 {
 	m_Mesh = std::make_unique<Mesh>(std::move(mesh));
@@ -56,7 +66,7 @@ void Engine::MeshRenderer::SetMesh(Mesh&& mesh)
 
 void Engine::MeshRenderer::AddTexture(Texture2D&& tex)
 {
-	m_Textures.emplace_back(std::make_shared<Texture2D>((tex)));
+	m_Textures.emplace_back(std::make_shared<Texture2D>((std::move(tex))));
 }
 
 void Engine::MeshRenderer::RemoveTexture(const uint32_t& index)

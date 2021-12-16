@@ -19,12 +19,12 @@ namespace Engine
 		GLuint m_EBO;
 
 		std::vector<std::shared_ptr<Texture2D>> m_Textures;
-		std::shared_ptr<Mesh> m_Mesh;
+		std::unique_ptr<Mesh> m_Mesh;
 		void Setup();
 		
 	public:
 
-		Mesh& GetMesh() const { return *static_cast<Mesh*>(m_Mesh.get()); }
+		Mesh& GetMesh();
 		void SetMesh(Mesh&& mesh);
 
 		std::vector<std::shared_ptr<Texture2D>> GetTextures() { return m_Textures; }

@@ -13,29 +13,27 @@ Engine::Camera::Camera(const std::string& name)
 
 void Engine::Camera::ProcessKeyboardEvent(const int& key, const float& dt)
 {
-	if (std::optional<Transform> tr; TryGetComponent(tr))
+	auto& tr = GetTransform();
+	const GLfloat velocity = dt * speed;
+	switch (key)
 	{
-		const GLfloat velocity = dt * speed;
-		switch (key)
-		{
-		case GLFW_KEY_S:
-			tr->position -= tr->GetForward() * velocity;
-			SetViewMatrix();
-			break;
-		case GLFW_KEY_W:
-			tr->position += tr->GetForward() * velocity;
-			SetViewMatrix();
-			break;
-		case GLFW_KEY_A:
-			tr->position -= tr->GetRight() * velocity;
-			SetViewMatrix();
-			break;
-		case GLFW_KEY_D:
-			tr->position += tr->GetRight() * velocity;
-			SetViewMatrix();
-			break;
-		default: ;
-		}
+	case GLFW_KEY_S:
+		tr.position -= tr.GetForward() * velocity;
+		SetViewMatrix();
+		break;
+	case GLFW_KEY_W:
+		tr.position += tr.GetForward() * velocity;
+		SetViewMatrix();
+		break;
+	case GLFW_KEY_A:
+		tr.position -= tr.GetRight() * velocity;
+		SetViewMatrix();
+		break;
+	case GLFW_KEY_D:
+		tr.position += tr.GetRight() * velocity;
+		SetViewMatrix();
+		break;
+	default: ;
 	}
 }
 

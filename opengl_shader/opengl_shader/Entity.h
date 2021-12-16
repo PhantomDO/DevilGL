@@ -39,8 +39,8 @@ namespace Engine
 		template<class ComponentType>
 		bool RemoveComponent();
 
-		template<class ComponentType>
-		bool TryGetComponent(std::optional<ComponentType>& component);
+		//template<class ComponentType>
+		//bool TryGetComponent(std::shared_ptr<ComponentType>& component);
 
 	public:
 
@@ -86,10 +86,10 @@ namespace Engine
 		return success;
 	}
 
-	template <class  ComponentType>
-	bool Entity::TryGetComponent(std::optional<ComponentType>& component)
-	{
-		component = GetComponent<ComponentType>();
-		return component.has_value();
-	}
+	//template <class  ComponentType>
+	//bool Entity::TryGetComponent(std::shared_ptr<ComponentType>& component)
+	//{
+	//	component = std::make_shared<ComponentType>(GetComponent<ComponentType>());
+	//	return component != nullptr;
+	//}
 }
