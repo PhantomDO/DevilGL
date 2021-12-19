@@ -10,6 +10,11 @@ namespace Engine
 {
 	class Camera : public GameEntity
 	{
+	private:
+		glm::mat4 m_ProjectionMatrix;
+		glm::mat4 m_ViewMatrix;
+
+		void UpdateView();
 
 	public:
 		GLfloat fov;
@@ -34,10 +39,8 @@ namespace Engine
 		glm::mat4 GetViewMatrix() const { return m_ViewMatrix; }
 		void SetViewMatrix();
 
-	private:
-		glm::mat4 m_ProjectionMatrix;
-		glm::mat4 m_ViewMatrix;
+	public:
 
-		void UpdateView();
+		Camera& operator =(const Camera& camera) = default;
 	};
 }

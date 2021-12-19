@@ -39,6 +39,7 @@ namespace Engine
 	class Component
 	{
 	public:
+
 		static const std::size_t Type;
 		virtual bool IsClassType(const std::size_t classType) const { return classType == Type; }
 		

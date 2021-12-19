@@ -90,7 +90,8 @@ void Engine::MeshRenderer::Draw(const ShaderProgram& shader) const
 	}
 
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, m_Mesh->indices.size(), GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
+	glDrawElements(	GL_TRIANGLES, static_cast<GLsizei>(m_Mesh->indices.size()), 
+					GL_UNSIGNED_INT, static_cast<GLvoid*>(0));
 	glBindVertexArray(0);
 }
 

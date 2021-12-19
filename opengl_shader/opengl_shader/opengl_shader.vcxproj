@@ -157,7 +157,7 @@
     <ClCompile Include="GameEntity.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Input.cpp" />
-    <ClCompile Include="JSONglm.cpp" />
+    <ClCompile Include="json_glm.hpp" />
     <ClCompile Include="json_smart_ptr.hpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />

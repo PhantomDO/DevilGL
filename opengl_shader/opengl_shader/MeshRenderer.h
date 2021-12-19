@@ -59,7 +59,7 @@ namespace Engine
 
 	public:
 
-		MeshRenderer& operator =(const MeshRenderer& mr) = default;
+		//MeshRenderer& operator =(const MeshRenderer& mr) = default;
 		//MeshRenderer& operator =(MeshRenderer&& mr) = default;
 	};
 }

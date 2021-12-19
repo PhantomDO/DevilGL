@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include "json_glm.hpp"
 #include "Component.h"
 
 namespace Engine
@@ -11,6 +12,10 @@ namespace Engine
 	class Transform : public Component
 	{
 		CLASS_DECLARATION(Transform)
+
+	public:
+		
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Transform, m_Origin, position, rotation, scale)
 
 	private:
 
@@ -67,18 +72,18 @@ namespace Engine
 			return os;
 		}
 
-		Transform& operator =(const Transform& tr)
-		{
-			if (this != &tr)
-			{
-				this->m_Origin = tr.m_Origin;
-				this->position = tr.position;
-				this->rotation = tr.rotation;
-				this->scale = tr.scale;
-			}
+		//Transform& operator =(const Transform& tr)
+		//{
+		//	if (this != &tr)
+		//	{
+		//		this->m_Origin = tr.m_Origin;
+		//		this->position = tr.position;
+		//		this->rotation = tr.rotation;
+		//		this->scale = tr.scale;
+		//	}
 
-			return *this;
-		}
+		//	return *this;
+		//}
 
 	};
 }

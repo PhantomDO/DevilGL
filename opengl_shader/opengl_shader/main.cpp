@@ -57,13 +57,13 @@ int main( int argc, char * argv[])
 	auto textureList = Tools::ChoiceListFromDirectory("./textures", texturePaths);
 
 	int count;
-	std::vector<std::unique_ptr<GameEntity>> entities;
+	std::vector<GameEntity> entities;
 	std::cout << "How many entities do you want ?";
 	std::cin >> count;
 	entities.reserve(count);
 	for (int i = 0; i < count; ++i)
 	{
-		auto entity = std::make_unique<GameEntity>();
+		auto entity = GameEntity(Tools::StringFormat("Entity (%d)", i));
 
 		if (!meshPaths.empty()) 
 		{
@@ -75,8 +75,7 @@ int main( int argc, char * argv[])
 			}
 
 			Debug::Log(meshPaths[meshChoice]);
-			entity->AddComponent<MeshRenderer>();
-			auto& mr = entity->GetComponent<MeshRenderer>();
+			auto& mr = entity.AddComponent<MeshRenderer>();
 			mr.SetMesh(Mesh(meshPaths[meshChoice]));
 			
 			if (!texturePaths.empty())
@@ -97,7 +96,9 @@ int main( int argc, char * argv[])
 		entities.emplace_back(std::move(entity));
 	}
 
-
+	std::ofstream o("./pretty.json");
+	json j = json::parse(entities.begin(), entities.end());
+	o << std::setw(4) << j << std::endl;
 
 	window->SetMeshProgram(ShaderProgram(
 		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
@@ -105,7 +106,7 @@ int main( int argc, char * argv[])
 
 	// light
 	count = 0;
-	std::vector<std::unique_ptr<Light>> lights;
+	std::vector<Light> lights;
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
@@ -119,13 +120,11 @@ int main( int argc, char * argv[])
 		lights.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			auto l = std::make_unique<Light>(glm::vec3(0), glm::vec3(1.0f), 
+			auto l = Light(glm::vec3(0), glm::vec3(1.0f), 
 			                glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
-			l->parameters = LightParameters(window->GetMeshProgram().GetID(), i);
-			l->meshParameters = LightParameters(window->GetLightProgram().GetID());
-			l->AddComponent<MeshRenderer>();
-
-			auto& mr = l->GetComponent<MeshRenderer>();
+			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
+			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
+			auto& mr = l.AddComponent<MeshRenderer>();
 			mr.SetMesh(Mesh("./models/cube.obj"));
 			
 			lights.emplace_back(std::move(l));
@@ -141,13 +140,11 @@ int main( int argc, char * argv[])
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
-	
-	if (std::shared_ptr<MeshRenderer> mr; entities[0] != nullptr && entities[0]->TryGetComponent(mr))
-	{
-		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
-			glm::value_ptr(glm::scale(glm::mat4(1), mr->GetMesh().bounds.size / 40.0f)));
-	}
-			
+
+	auto& mr = entities[0].GetComponent<MeshRenderer>();
+	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
+		glm::value_ptr(glm::scale(glm::mat4(1), mr.GetMesh().bounds.size / 40.0f)));
+				
 	// pointeur sur la couleur de la fenetre
 	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
 	/// pointeur sur la position de la souris
@@ -171,8 +168,8 @@ int main( int argc, char * argv[])
 	// pointeur sur les touche du claver
 	glfwSetKeyCallback(window->GetWindowPtr(), Engine::Input::GetKeyDown);
 
-	auto& mr = entities[0]->GetComponent<MeshRenderer>();
-	auto meshSize = glm::distance(mr.GetMesh().bounds.min, mr.GetMesh().bounds.max);
+	auto& bounds = entities[0].GetComponent<MeshRenderer>().GetMesh().bounds;
+	auto meshSize = glm::distance(bounds.min, bounds.max);
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
@@ -191,25 +188,23 @@ int main( int argc, char * argv[])
 			window->GetMeshProgram().Use();
 			for (auto& entity : entities)
 			{
-				if (std::shared_ptr<MeshRenderer> mr; entity->TryGetComponent(mr))
-				{
-					glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(mr->GetMVPMatrix(
-						window->camera.GetProjectionMatrix(),
-						window->camera.GetViewMatrix(),
-						entity->GetTransform().GetModelMatrix()
-					)));
+				auto& renderer = entity.GetComponent<MeshRenderer>();
+				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(Engine::MeshRenderer::GetMVPMatrix(
+					                   window->camera.GetProjectionMatrix(),
+					                   window->camera.GetViewMatrix(),
+					                   entity.GetTransform().GetModelMatrix()
+				                   )));
 
-					glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(mr->GetMVMatrix(
-						window->camera.GetViewMatrix(),
-						entity->GetTransform().GetModelMatrix()
-					)));
+				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(Engine::MeshRenderer::GetMVMatrix(
+					window->camera.GetViewMatrix(),
+					entity.GetTransform().GetModelMatrix()
+				)));
 
-					glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), 
-						static_cast<GLuint>(mr->GetTextures().size()));
-					glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
+				glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), 
+					static_cast<GLuint>(renderer.GetTextures().size()));
+				glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
 
-					mr->Draw(window->GetMeshProgram());
-				}
+				renderer.Draw(window->GetMeshProgram());
 			}
 		}
 		
@@ -230,32 +225,29 @@ int main( int argc, char * argv[])
 
 				if (i % 2 == 0) 
 				{
-					lights[i]->position.x = xorz;
-					lights[i]->position.y = yorx;
-					lights[i]->position.z = zory;
+					lights[i].position.x = xorz;
+					lights[i].position.y = yorx;
+					lights[i].position.z = zory;
 				}
 				else
 				{
-					lights[i]->position.z = xorz;
-					lights[i]->position.x = yorx;
-					lights[i]->position.y = zory;
+					lights[i].position.z = xorz;
+					lights[i].position.x = yorx;
+					lights[i].position.y = zory;
 				}
 				
-				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i]->position, 1.0f);
-				lights[i]->position = glm::vec3(lightPosition) / lightPosition.w;
+				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i].position, 1.0f);
+				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
 				
-				glUniform3fv(lights[i]->parameters.position, 1, glm::value_ptr(lights[i]->position));
-				glUniform3fv(lights[i]->parameters.ambiant, 1, glm::value_ptr(lights[i]->ambiant));
-				glUniform3fv(lights[i]->parameters.diffuse, 1, glm::value_ptr(lights[i]->diffuse));
-				glUniform3fv(lights[i]->parameters.specular, 1, glm::value_ptr(lights[i]->specular));
+				glUniform3fv(lights[i].parameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].parameters.ambiant, 1, glm::value_ptr(lights[i].ambiant));
+				glUniform3fv(lights[i].parameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+				glUniform3fv(lights[i].parameters.specular, 1, glm::value_ptr(lights[i].specular));
 									  
-				glUniform3fv(lights[i]->meshParameters.position, 1, glm::value_ptr(lights[i]->position));
-				glUniform3fv(lights[i]->meshParameters.diffuse, 1, glm::value_ptr(lights[i]->diffuse));
-				
-				if (std::shared_ptr<MeshRenderer> mr; lights[i]->TryGetComponent(mr))
-				{
-					mr->Draw(window->GetLightProgram());
-				}
+				glUniform3fv(lights[i].meshParameters.position, 1, glm::value_ptr(lights[i].position));
+				glUniform3fv(lights[i].meshParameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
+
+				lights[i].GetComponent<MeshRenderer>().Draw(window->GetLightProgram());
 			}
 		}
 
