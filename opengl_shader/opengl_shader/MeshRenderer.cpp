@@ -7,16 +7,6 @@
 
 CLASS_DEFINITION(Engine::Component, Engine::MeshRenderer)
 
-void to_json(nlohmann::json&, const Engine::MeshRenderer&)
-{
-	Engine::Debug::Log("called to_json for MeshRenderer");
-}
-
-void from_json(nlohmann::json const&, Engine::MeshRenderer&)
-{
-	Engine::Debug::Log("called from_json for MeshRenderer");
-}
-
 void Engine::MeshRenderer::Setup()
 {
 	if (m_Mesh == nullptr) return;

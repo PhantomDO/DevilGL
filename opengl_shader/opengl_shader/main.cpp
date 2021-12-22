@@ -1,7 +1,6 @@
 ﻿#include <iostream>
 #include <string>
 
-#include <nlohmann/json.hpp>
 #include "Entity.h"
 #include "GameEntity.h"
 #include "Helper.h"
@@ -14,8 +13,10 @@
 #include "Time.h"
 #include "Window.h"
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/json.hpp>
+
 // for convenience
-using json = nlohmann::json;
 using namespace Engine;
 
 
@@ -96,10 +97,11 @@ int main( int argc, char * argv[])
 		entities.emplace_back(std::move(entity));
 	}
 
-	std::ofstream o("./pretty.json");
-	json j = json::parse(entities.begin(), entities.end());
-	o << std::setw(4) << j << std::endl;
-
+	/// CEREAL TO JSON NOT WORKING
+	//bool arr[] = { true, false };
+	//cereal::JSONOutputArchive archive(std::cout);
+	//archive(CEREAL_NVP(entities), arr);
+	
 	window->SetMeshProgram(ShaderProgram(
 		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
 		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));

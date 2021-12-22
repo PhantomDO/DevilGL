@@ -4,6 +4,12 @@
 
 #include "Bounds.h"
 
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/archives/json.hpp>
+
+CEREAL_REGISTER_TYPE(Engine::Camera)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Engine::GameEntity, Engine::Camera)
+
 Engine::Camera::Camera(const std::string& name)
 	:	GameEntity(name), fov(45.0f), nearClip(0.1f), farClip(1000.0f),
 		m_ProjectionMatrix(), m_ViewMatrix(),

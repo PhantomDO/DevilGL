@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include <optional>
 #include <vector>
+#include <cereal/archives/json.hpp>
 
 #include "Transform.h"
-#include <nlohmann/json.hpp>
 
 namespace Engine
 {
@@ -13,9 +13,6 @@ namespace Engine
 	protected:
 		int m_InstanceID;
 		bool m_RootInScene;
-
-	public:
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Entity, m_InstanceID, m_RootInScene, name, tag, parent, components)
 
 	public:
 		static int ENTITY_COUNT;
@@ -50,9 +47,16 @@ namespace Engine
 
 	public:
 
+		virtual ~Entity() = default;
 		Entity(const std::string& name = "Entity")
 			: m_InstanceID(++ENTITY_COUNT), m_RootInScene(true), name(name), tag("Unknown"), parent(-1)
 		{
+		}
+
+		template<class Archive>
+		void serialize(Archive& archive)
+		{
+			archive(m_RootInScene, m_InstanceID, name, tag, parent);
 		}
 	};
 

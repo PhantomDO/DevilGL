@@ -4,7 +4,7 @@
 #include <glm/ext.hpp>
 
 #include "GameEntity.h"
-#include "Transform.h"
+#include <cereal/types/base_class.hpp>
 
 namespace Engine
 {
@@ -17,14 +17,14 @@ namespace Engine
 		void UpdateView();
 
 	public:
-		GLfloat fov;
-		GLfloat nearClip;
-		GLfloat farClip;
-
-		GLfloat yaw;
-		GLfloat pitch;
-		GLfloat speed;
-		GLfloat sensitivity;
+		float fov;
+		float nearClip;
+		float farClip;
+		
+		float yaw;
+		float pitch;
+		float speed;
+		float sensitivity;
 
 		Camera(const std::string& name = "Camera");
 
@@ -40,6 +40,13 @@ namespace Engine
 		void SetViewMatrix();
 
 	public:
+		
+		template<class Archive>
+		void serialize(Archive& archive)
+		{
+			archive(cereal::base_class<GameEntity>(this), 
+				/*m_ProjectionMatrix, m_ViewMatrix, */fov, nearClip, farClip, yaw, pitch, speed, sensitivity);
+		}
 
 		Camera& operator =(const Camera& camera) = default;
 	};

@@ -1,10 +1,9 @@
 ﻿#pragma once
-#include <iostream>
+
 #include <ostream>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
-#include "json_glm.hpp"
 #include "Component.h"
 
 namespace Engine
@@ -12,11 +11,7 @@ namespace Engine
 	class Transform : public Component
 	{
 		CLASS_DECLARATION(Transform)
-
-	public:
-		
-		NLOHMANN_DEFINE_TYPE_INTRUSIVE(Transform, m_Origin, position, rotation, scale)
-
+			
 	private:
 
 		glm::vec4 m_Origin;

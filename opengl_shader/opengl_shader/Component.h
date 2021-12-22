@@ -1,9 +1,4 @@
 ﻿#pragma once
-#include <iostream>
-#include <nlohmann/json.hpp>
-
-#include "Debug.h"
-#include "json_smart_ptr.hpp"
 
 #define TO_STRING( x ) #x
 
@@ -40,19 +35,12 @@ namespace Engine
 	{
 	public:
 
-		static const std::size_t Type;
-		virtual bool IsClassType(const std::size_t classType) const { return classType == Type; }
+		static const size_t Type;
+		virtual bool IsClassType(const size_t classType) const { return classType == Type; }
 		
 	public:
 		virtual ~Component() = default;
 		Component() = default;
 	};
-}
-
-
-namespace nlohmann
-{
-	template<>
-	struct adl_serializer<Engine::Component> : PolymorphicJsonSerializer<Engine::Component> {};
 }
 
