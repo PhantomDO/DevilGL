@@ -36,15 +36,10 @@ int main( int argc, char * argv[])
   //Tous les fichiers de cette solution sont encodés en UTF-8.
 	SetConsoleOutputCP(65001);
 #endif
-	const int window_width = 640;
-	const int window_height = 480;
+	constexpr int window_width = 1280;
+	constexpr int window_height = 720;
 	auto window = new Engine::Window(window_width, window_height, false);
-
-	// pointeur sur les touche du claver
-	glfwSetKeyCallback(window->GetWindowPtr(), Engine::Input::GetKeyDown);
-	//glfwSetScrollCallback(window->GetWindowPtr(), Input::GetScrolling);
-	glfwSetWindowSizeCallback(window->GetWindowPtr(), Engine::Input::GetSize);
-
+	
 	// COLOR
 	glm::vec3* background = new glm::vec3(0.33f, 1.0f, 1.0f);
 	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
@@ -132,9 +127,7 @@ int main( int argc, char * argv[])
 			lights.emplace_back(std::move(l));
 		}		
 	}
-
-	auto id = window->GetLightProgram().GetID();
-	
+		
 	//GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
@@ -147,11 +140,6 @@ int main( int argc, char * argv[])
 	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
 		glm::value_ptr(glm::scale(glm::mat4(1), mr.GetMesh().bounds.size / 40.0f)));
 				
-	// pointeur sur la couleur de la fenetre
-	glfwSetWindowUserPointer(window->GetWindowPtr(), background);
-	/// pointeur sur la position de la souris
-	glfwSetCursorPosCallback(window->GetWindowPtr(), Engine::Input::CursorPosCallback);
-
 	//// utilise le programe creer precedement
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -162,14 +150,7 @@ int main( int argc, char * argv[])
 
 	const GLint mvpID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
 	const GLint mvID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mv");
-
-	// pointeur sur la camera de la fenetre
-	glfwSetWindowUserPointer(window->GetWindowPtr(), window);
-	// pointeur sur la mouse wheel
-	glfwSetScrollCallback(window->GetWindowPtr(), Engine::Input::GetScrolling);
-	// pointeur sur les touche du claver
-	glfwSetKeyCallback(window->GetWindowPtr(), Engine::Input::GetKeyDown);
-
+	
 	auto& bounds = entities[0].GetComponent<MeshRenderer>().GetMesh().bounds;
 	auto meshSize = glm::distance(bounds.min, bounds.max);
 

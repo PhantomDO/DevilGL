@@ -7,6 +7,7 @@
 #include "Helper.h"
 #include "Tools.h"
 #include "Debug.h"
+#include "Input.h"
 
 using namespace Engine;
 
@@ -32,13 +33,26 @@ Window::Window(const int& width, const int& height, bool debugGL)
 
 	m_Width = width;
 	m_Height = height;
-	m_Window = glfwCreateWindow(width, width, "Hello World", NULL, NULL);
+	m_Window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
 	if (!m_Window) 
 	{
 		Helper::Terminate("Impossible de créer la fenêtre !");
 	}
 
 	glfwMakeContextCurrent(m_Window);
+	// pointeur sur le framebuffer de la fenetre
+	glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
+	// pointeur sur la mouse wheel
+	glfwSetScrollCallback(m_Window, Engine::Input::GetScrolling);
+	// pointeur sur les touche du claver
+	glfwSetKeyCallback(m_Window, Engine::Input::GetKeyDown);
+	/// pointeur sur la position de la souris
+	glfwSetCursorPosCallback(m_Window, Engine::Input::CursorPosCallback);
+	// pointeur sur la taille de la fenetre
+	glfwSetWindowSizeCallback(m_Window, Engine::Input::GetSize);
+
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	glewExperimental = GL_TRUE;
 	
 	GLenum err;
@@ -59,17 +73,19 @@ Window::Window(const int& width, const int& height, bool debugGL)
 
 	camera = Camera("Main Camera");
 
-	auto tr = camera.GetTransform();
+	auto& tr = camera.GetTransform();
 	tr.position = glm::vec3(0, 0, 10);
 	camera.SetProjectionMatrix(width, height);
 	camera.SetViewMatrix();
 
-	glViewport(0,0, m_Width, m_Height);
-
+	//glViewport(0,0, m_Width, m_Height);
 	glfwSetWindowUserPointer(m_Window, this);
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	mousePosition = glm::vec2(width / 2, height / 2);
+}
 
+void Window::FramebufferSizeCallback(GLFWwindow* window, int w, int h)
+{
+	glViewport(0, 0, w, h);
 }
 

@@ -1,6 +1,8 @@
 ﻿#include "Input.h"
 
+#include "Debug.h"
 #include "Time.h"
+#include "Tools.h"
 
 void Engine::Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 {
@@ -16,7 +18,12 @@ void Engine::Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 		window.mousePosition.y - static_cast<float>(y)); // y reversed (bottom to up)
 
 	window.mousePosition = glm::vec2(static_cast<float>(x), static_cast<float>(y));
+	Debug::Log(Tools::StringFormat("Mouse Position (x: %f, y: %f)", window.mousePosition.x, window.mousePosition.y));
 	window.camera.ProcessMouseMouvement(offset);
+
+	/*glfwSetCursorPos(pWindow, 
+		glm::clamp(static_cast<int>(x), -windowSizeX / 2, windowSizeX / 2), 
+		glm::clamp(static_cast<int>(y), -windowSizeY / 2, windowSizeY / 2));*/
 	//color = Helper::HSVtoRGB(glm::vec3(color.r, static_cast<float>(x/windowSizeX), static_cast<float>(y/windowSizeY)));
 }
 

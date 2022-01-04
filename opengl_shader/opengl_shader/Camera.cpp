@@ -21,26 +21,25 @@ void Engine::Camera::ProcessKeyboardEvent(const int& key, const float& dt)
 {
 	auto& tr = GetTransform();
 	const GLfloat velocity = dt * speed;
-	switch (key)
+
+	if (key == GLFW_KEY_S)
 	{
-	case GLFW_KEY_S:
 		tr.position -= tr.GetForward() * velocity;
-		SetViewMatrix();
-		break;
-	case GLFW_KEY_W:
-		tr.position += tr.GetForward() * velocity;
-		SetViewMatrix();
-		break;
-	case GLFW_KEY_A:
-		tr.position -= tr.GetRight() * velocity;
-		SetViewMatrix();
-		break;
-	case GLFW_KEY_D:
-		tr.position += tr.GetRight() * velocity;
-		SetViewMatrix();
-		break;
-	default: ;
 	}
+	if (key == GLFW_KEY_W)
+	{
+		tr.position += tr.GetForward() * velocity;
+	}
+	if (key == GLFW_KEY_A)
+	{
+		tr.position -= tr.GetRight() * velocity;
+	}
+	if (key == GLFW_KEY_D)
+	{
+		tr.position += tr.GetRight() * velocity;
+	}
+
+	SetViewMatrix();
 }
 
 void Engine::Camera::ProcessMouseMouvement(glm::vec2& offset, GLboolean constrain)
@@ -65,12 +64,12 @@ void Engine::Camera::ProcessMouseScroll(const float& yFov)
 
 void Engine::Camera::UpdateView()
 {
-	const glm::quat qPitch = glm::angleAxis(glm::radians(pitch), glm::vec3(1, 0, 0));
-	const glm::quat qYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0, 1, 0));
+	const glm::quat qPitch = glm::angleAxis(glm::radians(pitch), Transform::GetWorldRight());
+	const glm::quat qYaw = glm::angleAxis(glm::radians(yaw), Transform::GetWorldUp());
 	//const glm::quat qRoll = glm::angleAxis(glm::radians(roll), glm::vec3(0, 0, 1));
 
 	const glm::quat orientation = qPitch * qYaw;
-	auto tr = GetComponent<Transform>();
+	auto& tr = GetComponent<Transform>();
 	tr.rotation = glm::normalize(orientation);
 	SetViewMatrix();
 }
@@ -84,6 +83,6 @@ void Engine::Camera::SetProjectionMatrix(const int& width, const int& height)
 
 void Engine::Camera::SetViewMatrix()
 {
-	const auto tr = GetComponent<Transform>();
-	m_ViewMatrix = glm::lookAt(tr.position, tr.position + tr.GetForward(), tr.GetWorldUp());
+	const auto& tr = GetComponent<Transform>();
+	m_ViewMatrix = glm::lookAt(tr.position, tr.position + tr.GetForward(), Transform::GetWorldUp());
 }

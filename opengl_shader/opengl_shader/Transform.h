@@ -23,7 +23,7 @@ namespace Engine
 
 		glm::vec3 GetUp() const { return glm::normalize(glm::cross(GetRight(), GetForward())); }
 		glm::vec3 GetRight() const { return glm::normalize(glm::cross(GetForward(), GetWorldUp())); }
-		glm::vec3 GetForward() const { return rotation * GetWorldForward(); }
+		glm::vec3 GetForward() const { return glm::normalize(rotation * GetWorldForward()); }
 
 		glm::vec4 GetTransformedVector() const { return GetModelMatrix() * m_Origin; }
 		glm::mat4 GetModelMatrix() const

@@ -12,6 +12,7 @@ namespace Engine
 	class Window
 	{
 	public:
+		static void FramebufferSizeCallback(GLFWwindow* window, int w, int h);
 
 		ShaderProgram GetMeshProgram() const { return m_MeshProgram; }
 		void SetMeshProgram(const ShaderProgram& meshProgram) { m_MeshProgram = meshProgram; }
@@ -27,6 +28,7 @@ namespace Engine
 		Camera camera;
 
 		glm::vec2 mousePosition{};
+		glm::vec2 mouseAxis{};
 
 	private:
 
