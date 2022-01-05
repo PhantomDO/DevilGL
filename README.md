@@ -20,3 +20,7 @@ Ce qui nous a permis de valider le projet sur d'autres objets que la sphère.
 Pour améliorer le calcul nous avons mis en place une structure accélératrice qui regroupaient les bounds de l'objet et les divisaient en sous-boites internes, ce qui permit raytracer d'aller chercher en profondeur les triangles affichables ou non.
 
 
+## Simulation physique
+
+Nous avons étudié la cinématique inverse via l'implémentation de l'algorithme FABRIK. 
+
