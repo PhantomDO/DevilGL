@@ -33,6 +33,6 @@ Pour la dernière partie en synthèse d'image, nous avons utilisé OpenGL. Le bu
 
 Nous avons ensuite cherché à utiliser des inputs, pour effectuer des modifications, comme bouger la caméra, changer sa rotation, etc... 
 
-Pour améliorer la lisibilité et l'utilisation du code, j'ai décidé d'en faire un mini-moteur de jeu, en reprenant le principe des composants qu'utilise le moteur Unity et grâce à différentes aides ([component system] (https://stackoverflow.com/questions/44105058/implementing-component-system-from-unity-in-c), [rtii](https://docs.microsoft.com/fr-fr/cpp/cpp/run-time-type-information?view=msvc-170)). 
+Pour améliorer la lisibilité et l'utilisation du code, j'ai décidé d'en faire un mini-moteur de jeu, en reprenant le principe des composants qu'utilise le moteur Unity et grâce à différentes aides ([component system](https://stackoverflow.com/questions/44105058/implementing-component-system-from-unity-in-c), [rtii](https://docs.microsoft.com/fr-fr/cpp/cpp/run-time-type-information?view=msvc-170)). 
 
 Je travaille maintenant à créer un petit fps. 
