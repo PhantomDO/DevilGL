@@ -24,3 +24,4 @@ Pour améliorer le calcul nous avons mis en place une structure accélératrice 
 
 Nous avons étudié la cinématique inverse via l'implémentation de l'algorithme FABRIK. 
 
+
