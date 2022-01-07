@@ -45,12 +45,15 @@ int main( int argc, char * argv[])
 	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
 	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);	
 	glClearColor(background->r,	background->g,	background->b,	1.0f);
+	
+	const std::string meshesFolderPath = "../../Assets/models";
+	const std::string texturesFolderPath = "../../Assets/textures";
 
-	// mesh
-	std::vector<std::string> meshPaths;
-	auto meshList = Tools::ChoiceListFromDirectory("./models", meshPaths);
-	std::vector<std::string> texturePaths;
-	auto textureList = Tools::ChoiceListFromDirectory("./textures", texturePaths);
+	std::vector<std::string> meshesPaths = Tools::GetAssetFromDirectory("../../Assets/models");
+	std::vector<std::string> texturesPaths = Tools::GetAssetFromDirectory("../../Assets/textures");
+
+	auto meshList = Tools::ChoiceListFromDirectory(meshesFolderPath, meshesPaths);
+	auto textureList = Tools::ChoiceListFromDirectory(texturesFolderPath, texturesPaths);
 
 	int count;
 	std::vector<GameEntity> entities;
@@ -61,30 +64,38 @@ int main( int argc, char * argv[])
 	{
 		auto entity = GameEntity(Tools::StringFormat("Entity (%d)", i));
 
-		if (!meshPaths.empty()) 
+		if (!meshesPaths.empty()) 
 		{
-			int meshChoice = -1;
-			while (meshChoice <= -1)
+			int meshChoice = 0;
+			if (meshesPaths.size() > 1) 
 			{
-				Debug::Log(meshList);
-				std::cin >> meshChoice;
+				std::string s;
+				while (std::getline(std::cin, s))
+				{
+					if (std::stringstream(s) >> meshChoice) break;
+					Debug::Log(meshList);
+				}
 			}
 
-			Debug::Log(meshPaths[meshChoice]);
+			Debug::Log(meshesPaths[meshChoice]);
 			auto& mr = entity.AddComponent<MeshRenderer>();
-			mr.SetMesh(Mesh(meshPaths[meshChoice]));
+			mr.SetMesh(Mesh(meshesPaths[meshChoice]));
 			
-			if (!texturePaths.empty())
+			if (!texturesPaths.empty())
 			{
-				int texChoice = -1;
-				while (texChoice <= -1)
+				int texChoice = 0;
+				if (texturesPaths.size() > 1) 
 				{
-					Debug::Log(textureList);
-					std::cin >> texChoice;
+					std::string s;
+					while (std::getline(std::cin, s))
+					{
+						if (std::stringstream(s) >> texChoice) break;
+						Debug::Log(textureList);
+					}
 				}
 
-				Debug::Log(texturePaths[texChoice]);
-				mr.AddTexture(Texture2D(texturePaths[texChoice]));
+				Debug::Log(texturesPaths[texChoice]);
+				mr.AddTexture(Texture2D(texturesPaths[texChoice]));
 			}
 
 		}
@@ -122,7 +133,10 @@ int main( int argc, char * argv[])
 			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
 			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
 			auto& mr = l.AddComponent<MeshRenderer>();
-			mr.SetMesh(Mesh("./models/cube.obj"));
+
+			std::stringstream cubeObj;
+			cubeObj << meshesFolderPath << "/cube.obj";
+			mr.SetMesh(Mesh(cubeObj.str()));
 			
 			lights.emplace_back(std::move(l));
 		}		

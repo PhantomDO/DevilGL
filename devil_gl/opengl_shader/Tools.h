@@ -36,10 +36,8 @@ namespace Engine
 			return paths;
 		}
 
-		static std::string ChoiceListFromDirectory(const std::string& directory, std::vector<std::string>& assets)
+		static std::string ChoiceListFromDirectory(const std::string& directory, const std::vector<std::string>& assets)
 		{
-			assets = GetAssetFromDirectory(directory);
-
 			if (assets.empty())
 			{
 				Debug::LogError(Tools::StringFormat("No assets found in %s", directory));
