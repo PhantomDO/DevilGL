@@ -4,6 +4,7 @@ https://github.com/rorygames/OBJ-Loader/blob/master/ObjectLoader/Model.h
 https://gamedev.stackexchange.com/questions/116208/modern-opengl-c-obj-loader
 https://stackoverflow.com/questions/60829086/custom-opengl-obj-model-loader-indices-calculation-not-working
 
+
 # Synthèse d'image
 
 Dans ce cours de synthèse d'image, nous avons effectué au départ des rappels mathématique utiles dans un environnement 3D. Nous avons dû créer un créateur de PPM pour pouvoir extraire une image de pixels. 
