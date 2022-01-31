@@ -16,6 +16,8 @@
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/archives/json.hpp>
 
+#define DEFAULT_LOADING 0
+
 // for convenience
 using namespace Engine;
 
@@ -28,35 +30,16 @@ extern "C" _declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 
 const GLfloat PI = 3.1415926535897932384626433832795f;
 
-
-int main( int argc, char * argv[])
+void ParametersLoading(	const std::string& meshesFolderPath, const std::string& texturesFolderPath, const Engine::Window& window,
+						std::vector<GameEntity>& entities, std::vector<Light>& lights)
 {
-#ifdef WIN32
-  //Passe la console en UTF-8, permettant d'afficher les accents.
-  //Tous les fichiers de cette solution sont encodés en UTF-8.
-	SetConsoleOutputCP(65001);
-#endif
-	constexpr int window_width = 1280;
-	constexpr int window_height = 720;
-	auto window = new Engine::Window(window_width, window_height, false);
-	
-	// COLOR
-	glm::vec3* background = new glm::vec3(0.33f, 1.0f, 1.0f);
-	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
-	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);	
-	glClearColor(background->r,	background->g,	background->b,	1.0f);
-	
-	const std::string meshesFolderPath = "../../Assets/models";
-	const std::string texturesFolderPath = "../../Assets/textures";
-
-	std::vector<std::string> meshesPaths = Tools::GetAssetFromDirectory("../../Assets/models");
-	std::vector<std::string> texturesPaths = Tools::GetAssetFromDirectory("../../Assets/textures");
+	auto meshesPaths = Tools::GetAssetFromDirectory(meshesFolderPath);
+	auto texturesPaths = Tools::GetAssetFromDirectory(texturesFolderPath);
 
 	auto meshList = Tools::ChoiceListFromDirectory(meshesFolderPath, meshesPaths);
 	auto textureList = Tools::ChoiceListFromDirectory(texturesFolderPath, texturesPaths);
 
 	int count;
-	std::vector<GameEntity> entities;
 	std::cout << "How many entities do you want ?";
 	std::cin >> count;
 	entities.reserve(count);
@@ -97,31 +80,15 @@ int main( int argc, char * argv[])
 				Debug::Log(texturesPaths[texChoice]);
 				mr.AddTexture(Texture2D(texturesPaths[texChoice]));
 			}
-
 		}
 
 		entities.emplace_back(std::move(entity));
 	}
 
-	/// CEREAL TO JSON NOT WORKING
-	//bool arr[] = { true, false };
-	//cereal::JSONOutputArchive archive(std::cout);
-	//archive(CEREAL_NVP(entities), arr);
-	
-	window->SetMeshProgram(ShaderProgram(
-		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
-		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
-
-	// light
 	count = 0;
-	std::vector<Light> lights;
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
-
-	window->SetLightProgram(ShaderProgram(
-		Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
-		Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
 	
 	if (count > 0) 
 	{		
@@ -130,8 +97,8 @@ int main( int argc, char * argv[])
 		{
 			auto l = Light(glm::vec3(0), glm::vec3(1.0f), 
 			                glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
-			l.parameters = LightParameters(window->GetMeshProgram().GetID(), i);
-			l.meshParameters = LightParameters(window->GetLightProgram().GetID());
+			l.parameters = LightParameters(window.GetMeshProgram().GetID(), i);
+			l.meshParameters = LightParameters(window.GetLightProgram().GetID());
 			auto& mr = l.AddComponent<MeshRenderer>();
 
 			std::stringstream cubeObj;
@@ -141,7 +108,90 @@ int main( int argc, char * argv[])
 			lights.emplace_back(std::move(l));
 		}		
 	}
+}
+
+void DefaultLoading(const std::string& meshesFolderPath, const std::string& texturesFolderPath, const Engine::Window& window,
+						std::vector<GameEntity>& entities, std::vector<Light>& lights)
+{
+	auto meshesPaths = Tools::GetAssetFromDirectory(meshesFolderPath);
+	auto texturesPaths = Tools::GetAssetFromDirectory(texturesFolderPath);
+
+	auto meshList = Tools::ChoiceListFromDirectory(meshesFolderPath, meshesPaths);
+	auto textureList = Tools::ChoiceListFromDirectory(texturesFolderPath, texturesPaths);
+
+	int count = 1;
+	entities.reserve(count);
+	if (!meshesPaths.empty()) 
+	{
+		auto entity = GameEntity(Tools::StringFormat("Entity (%d)", 0));
+		Debug::Log(meshesPaths[0]);
+		auto& mr = entity.AddComponent<MeshRenderer>();
+		mr.SetMesh(Mesh(meshesPaths[0]));
+			
+		if (!texturesPaths.empty())
+		{
+			Debug::Log(texturesPaths[0]);
+			mr.AddTexture(Texture2D(texturesPaths[0]));
+		}
 		
+		entities.emplace_back(std::move(entity));
+	}
+
+	count = 2;	
+	lights.reserve(count);
+	for (int i = 0; i < count; ++i)
+	{
+		auto light = Light(glm::vec3(0), glm::vec3(1.0f), 
+			            glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
+		light.parameters = LightParameters(window.GetMeshProgram().GetID(), i);
+		light.meshParameters = LightParameters(window.GetLightProgram().GetID());
+		auto& mr = light.AddComponent<MeshRenderer>();
+		mr.SetMesh(Mesh(meshesPaths[0]));
+			
+		lights.emplace_back(std::move(light));
+	}	
+}
+
+
+int main( int argc, char * argv[])
+{
+#ifdef WIN32
+  //Passe la console en UTF-8, permettant d'afficher les accents.
+  //Tous les fichiers de cette solution sont encodés en UTF-8.
+	SetConsoleOutputCP(65001);
+#endif
+	constexpr int window_width = 1280;
+	constexpr int window_height = 720;
+	auto window = new Engine::Window(window_width, window_height, false);
+	
+	// COLOR
+	auto background = glm::vec3(0.0f, 0.0f, 0.0f);
+	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
+	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);	
+	glClearColor(background.r,	background.g,	background.b,	1.0f);
+	
+	const std::string meshesFolderPath = "../../Assets/models";
+	const std::string texturesFolderPath = "../../Assets/textures";
+
+	std::vector<GameEntity> entities;
+	
+	window->SetMeshProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
+		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
+
+	// light
+	std::vector<Light> lights;
+
+	window->SetLightProgram(ShaderProgram(
+		Shader{ GL_VERTEX_SHADER, "LightVertexShader.glsl" },
+		Shader{ GL_FRAGMENT_SHADER, "LightFragmentShader.glsl" }));
+
+#if DEFAULT_LOADING <= 0
+	DefaultLoading(meshesFolderPath, texturesFolderPath, *window, entities, lights);
+#else
+	ParametersLoading(meshesFolderPath, texturesFolderPath, *window, entities, lights);
+#endif
+
 	//GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
 	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
@@ -160,7 +210,7 @@ int main( int argc, char * argv[])
 
 	glfwSetTime(0);	
 	//// change la couleur de la fenetre
-	glClearColor(1.f, 0.08f, 0.58f, 1.f);
+	glClearColor(background.r,	background.g,	background.b,	1.f);
 
 	const GLint mvpID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
 	const GLint mvID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mv");
@@ -187,10 +237,10 @@ int main( int argc, char * argv[])
 			{
 				auto& renderer = entity.GetComponent<MeshRenderer>();
 				glUniformMatrix4fv(mvpID, 1, GL_FALSE, glm::value_ptr(Engine::MeshRenderer::GetMVPMatrix(
-					                   window->camera.GetProjectionMatrix(),
-					                   window->camera.GetViewMatrix(),
-					                   entity.GetTransform().GetModelMatrix()
-				                   )));
+					window->camera.GetProjectionMatrix(),
+					window->camera.GetViewMatrix(),
+					entity.GetTransform().GetModelMatrix()
+				)));
 
 				glUniformMatrix4fv(mvID, 1, GL_FALSE, glm::value_ptr(Engine::MeshRenderer::GetMVMatrix(
 					window->camera.GetViewMatrix(),

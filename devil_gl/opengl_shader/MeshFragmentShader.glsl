@@ -30,7 +30,7 @@ vec3 LightCalculation(Light l, vec3 n, Vertex v) // light, normal, vertex
 {
 	vec3 uv = texSample == 0u ? vec3(1) : vec3(texture(tex, v.uv));
 
-	vec3 ambiant = uv /* l.ambiant*/;
+	vec3 ambiant = uv * l.ambiant;
 //
 //	vec3 direction = normalize(l.position - v.position);
 //	float difference = max(dot(n, direction), 0);
