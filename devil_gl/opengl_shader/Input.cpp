@@ -14,12 +14,15 @@ void Engine::Input::CursorPosCallback(GLFWwindow* pWindow, double x, double y)
 	// recupere taille de la fenetre
 	glfwGetWindowSize(pWindow, &windowSizeX, &windowSizeY);
 
-	glm::vec2 offset = glm::vec2(window.mousePosition.x - static_cast<float>(x),
-		window.mousePosition.y - static_cast<float>(y)); // y reversed (bottom to up)
+	auto mousePos = window.mousePosition;
+
+	glm::vec2 offset = glm::vec2(mousePos.x - static_cast<float>(x),
+		mousePos.y - static_cast<float>(y)); // y reversed (bottom to up)
 
 	window.mousePosition = glm::vec2(static_cast<float>(x), static_cast<float>(y));
-	Debug::Log(Tools::StringFormat("Mouse Position (x: %f, y: %f)", window.mousePosition.x, window.mousePosition.y));
+	//Debug::Log(Tools::StringFormat("Mouse Position (x: %f, y: %f)", window.mousePosition.x, window.mousePosition.y));
 	window.camera.ProcessMouseMouvement(offset);
+	//Debug::Log(Tools::StringFormat("Offset (x: %f, y: %f)", offset.x, offset.y));
 
 	/*glfwSetCursorPos(pWindow, 
 		glm::clamp(static_cast<int>(x), -windowSizeX / 2, windowSizeX / 2), 

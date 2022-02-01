@@ -192,8 +192,8 @@ int main( int argc, char * argv[])
 	ParametersLoading(meshesFolderPath, texturesFolderPath, *window, entities, lights);
 #endif
 
-	//GLint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
-	GLint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
+	GLuint usedLightCount = glGetUniformLocation(window->GetLightProgram().GetID(), "usedLightCount");
+	GLuint usedLightMeshCount = glGetUniformLocation(window->GetMeshProgram().GetID(), "usedLightCount");
 
 	window->GetLightProgram().Use();
 	GLuint lightProjMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "proj");
@@ -255,7 +255,7 @@ int main( int argc, char * argv[])
 			}
 		}
 		
-		//glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
+		glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
 		glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
 
 		// Lights
