@@ -27,9 +27,11 @@ namespace Engine
 		static std::vector<std::string> GetAssetFromDirectory(const std::string& directory)
 		{
 			std::vector<std::string> paths;
-			for (const auto& entry : std::filesystem::directory_iterator(directory))
+			if (!std::filesystem::is_directory(directory)) return paths;
+
+			for (auto const& entry : std::filesystem::directory_iterator(directory))
 			{
-				std::string path = entry.path().generic_u8string();
+				std::string path = entry.path().generic_string();
 				std::replace(path.begin(), path.end(), '\\', '/');
 				paths.emplace_back(path);
 			}
@@ -40,7 +42,7 @@ namespace Engine
 		{
 			if (assets.empty())
 			{
-				Debug::LogError(Tools::StringFormat("No assets found in %s", directory));
+				Debug::LogError(Tools::StringFormat("No assets found in '%s'", directory.c_str()));
 				return "";
 			}
 

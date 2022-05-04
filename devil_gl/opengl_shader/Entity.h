@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include <optional>
 #include <vector>
-#include <cereal/archives/json.hpp>
-
 #include "Transform.h"
 
 namespace Engine
@@ -26,7 +24,7 @@ namespace Engine
 	public:
 		int GetInstanceID() const { return m_InstanceID; }
 		bool CompareTag(const std::string& tag) const { return this->tag == tag; }
-		
+
 		template <class ComponentType, class ... Args>
 		ComponentType& AddComponent(Args&& ... params);
 
@@ -41,7 +39,7 @@ namespace Engine
 
 		template<class ComponentType>
 		std::vector<ComponentType*> GetComponents();
-		
+
 		template<class ComponentType>
 		int RemoveComponents();
 
@@ -51,12 +49,6 @@ namespace Engine
 		Entity(const std::string& name = "Entity")
 			: m_InstanceID(++ENTITY_COUNT), m_RootInScene(true), name(name), tag("Unknown"), parent(-1)
 		{
-		}
-
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(m_RootInScene, m_InstanceID, name, tag, parent);
 		}
 	};
 
@@ -112,7 +104,7 @@ namespace Engine
 		component = *std::shared_ptr<ComponentType>(nullptr);
 		return false;
 	}
-	
+
 	template <class ComponentType>
 	std::vector<ComponentType*> Entity::GetComponents()
 	{
@@ -146,7 +138,7 @@ namespace Engine
 			});
 
 			success = index != components.end();
-			if (success) 
+			if (success)
 			{
 				components.erase(index);
 				++numRemoved;

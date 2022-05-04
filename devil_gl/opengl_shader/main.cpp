@@ -13,9 +13,6 @@
 #include "Time.h"
 #include "Window.h"
 
-#include <cereal/types/polymorphic.hpp>
-#include <cereal/archives/json.hpp>
-
 #define DEFAULT_LOADING 0
 
 // for convenience
@@ -47,10 +44,10 @@ void ParametersLoading(	const std::string& meshesFolderPath, const std::string& 
 	{
 		auto entity = GameEntity(Tools::StringFormat("Entity (%d)", i));
 
-		if (!meshesPaths.empty()) 
+		if (!meshesPaths.empty())
 		{
 			int meshChoice = 0;
-			if (meshesPaths.size() > 1) 
+			if (meshesPaths.size() > 1)
 			{
 				std::string s;
 				while (std::getline(std::cin, s))
@@ -63,11 +60,11 @@ void ParametersLoading(	const std::string& meshesFolderPath, const std::string& 
 			Debug::Log(meshesPaths[meshChoice]);
 			auto& mr = entity.AddComponent<MeshRenderer>();
 			mr.SetMesh(Mesh(meshesPaths[meshChoice]));
-			
+
 			if (!texturesPaths.empty())
 			{
 				int texChoice = 0;
-				if (texturesPaths.size() > 1) 
+				if (texturesPaths.size() > 1)
 				{
 					std::string s;
 					while (std::getline(std::cin, s))
@@ -89,13 +86,13 @@ void ParametersLoading(	const std::string& meshesFolderPath, const std::string& 
 	std::cout << "How many light do you want 0, 1, 2 ?";
 	std::cin >> count;
 	if (count > 2) count = 2;
-	
-	if (count > 0) 
-	{		
+
+	if (count > 0)
+	{
 		lights.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			auto l = Light(glm::vec3(0), glm::vec3(1.0f), 
+			auto l = Light(glm::vec3(0), glm::vec3(1.0f),
 			                glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
 			l.parameters = LightParameters(window.GetMeshProgram().GetID(), i);
 			l.meshParameters = LightParameters(window.GetLightProgram().GetID());
@@ -104,9 +101,9 @@ void ParametersLoading(	const std::string& meshesFolderPath, const std::string& 
 			std::stringstream cubeObj;
 			cubeObj << meshesFolderPath << "/cube.obj";
 			mr.SetMesh(Mesh(cubeObj.str()));
-			
+
 			lights.emplace_back(std::move(l));
-		}		
+		}
 	}
 }
 
@@ -121,35 +118,38 @@ void DefaultLoading(const std::string& meshesFolderPath, const std::string& text
 
 	int count = 1;
 	entities.reserve(count);
-	if (!meshesPaths.empty()) 
+	if (!meshesPaths.empty())
 	{
 		auto entity = GameEntity(Tools::StringFormat("Entity (%d)", 0));
 		Debug::Log(meshesPaths[0]);
 		auto& mr = entity.AddComponent<MeshRenderer>();
 		mr.SetMesh(Mesh(meshesPaths[0]));
-			
+
 		if (!texturesPaths.empty())
 		{
 			Debug::Log(texturesPaths[0]);
 			mr.AddTexture(Texture2D(texturesPaths[0]));
 		}
-		
+
 		entities.emplace_back(std::move(entity));
 	}
 
-	count = 2;	
+	count = 2;
 	lights.reserve(count);
-	for (int i = 0; i < count; ++i)
+	if (!meshesPaths.empty())
 	{
-		auto light = Light(glm::vec3(0), glm::vec3(1.0f), 
-			            glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
-		light.parameters = LightParameters(window.GetMeshProgram().GetID(), i);
-		light.meshParameters = LightParameters(window.GetLightProgram().GetID());
-		auto& mr = light.AddComponent<MeshRenderer>();
-		mr.SetMesh(Mesh(meshesPaths[0]));
-			
-		lights.emplace_back(std::move(light));
-	}	
+		for (int i = 0; i < count; ++i)
+		{
+			auto light = Light(glm::vec3(0), glm::vec3(1.0f),
+				glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(1.0f, 1.0f, 0.8f));
+			light.parameters = LightParameters(window.GetMeshProgram().GetID(), i);
+			light.meshParameters = LightParameters(window.GetLightProgram().GetID());
+			auto& mr = light.AddComponent<MeshRenderer>();
+			mr.SetMesh(Mesh(meshesPaths[0]));
+
+			lights.emplace_back(std::move(light));
+		}
+	}
 }
 
 
@@ -163,18 +163,18 @@ int main( int argc, char * argv[])
 	constexpr int window_width = 1280;
 	constexpr int window_height = 720;
 	auto window = new Engine::Window(window_width, window_height, false);
-	
+
 	// COLOR
-	auto background = glm::vec3(0.0f, 0.0f, 0.0f);
+	auto background = glm::vec3(255.0f/255, 192.0f/255, 203.0f/255);
 	auto orange = glm::vec3(0.39f, 1.0f, 1.0f);
-	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);	
+	auto blue = glm::vec3(1.0f, 1.0f, 1.0f);
 	glClearColor(background.r,	background.g,	background.b,	1.0f);
-	
+
 	const std::string meshesFolderPath = "../../Assets/models";
 	const std::string texturesFolderPath = "../../Assets/textures";
 
 	std::vector<GameEntity> entities;
-	
+
 	window->SetMeshProgram(ShaderProgram(
 		Shader{ GL_VERTEX_SHADER, "MeshVertexShader.glsl" },
 		Shader{ GL_FRAGMENT_SHADER, "MeshFragmentShader.glsl" }));
@@ -200,23 +200,24 @@ int main( int argc, char * argv[])
 	glUniformMatrix4fv(lightProjMatrix, 1, GL_FALSE, glm::value_ptr(window->camera.GetProjectionMatrix()));
 	GLuint lightModelMatrix = glGetUniformLocation(window->GetLightProgram().GetID(), "model");
 
-	auto& mr = entities[0].GetComponent<MeshRenderer>();
-	glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE, 
-		glm::value_ptr(glm::scale(glm::mat4(1), mr.GetMesh().bounds.size / 40.0f)));
-				
+	glm::vec3 size = entities.empty() ? glm::vec3(1) : entities[0].GetComponent<MeshRenderer>().GetMesh().bounds.size;
+		glUniformMatrix4fv(lightModelMatrix, 1, GL_FALSE,
+		glm::value_ptr(glm::scale(glm::mat4(1), size / 40.0f)));
+
 	//// utilise le programe creer precedement
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	glfwSetTime(0);	
+	glfwSetTime(0);
 	//// change la couleur de la fenetre
 	glClearColor(background.r,	background.g,	background.b,	1.f);
 
 	const GLint mvpID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mvp");
 	const GLint mvID = glGetUniformLocation(window->GetMeshProgram().GetID(), "mv");
-	
-	auto& bounds = entities[0].GetComponent<MeshRenderer>().GetMesh().bounds;
-	auto meshSize = glm::distance(bounds.min, bounds.max);
+
+	glm::vec3 min = entities.empty() ? glm::vec3(-1) : entities[0].GetComponent<MeshRenderer>().GetMesh().bounds.min;
+	glm::vec3 max = entities.empty() ? glm::vec3(1) : entities[0].GetComponent<MeshRenderer>().GetMesh().bounds.max;
+		auto meshSize = glm::distance(min, max);
 
 	while (!glfwWindowShouldClose(window->GetWindowPtr()))
 	{
@@ -228,9 +229,9 @@ int main( int argc, char * argv[])
 		glfwPollEvents();
 		// remet la couleur par default
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		// Mesh
-		if (!entities.empty()) 
+		if (!entities.empty())
 		{
 			window->GetMeshProgram().Use();
 			for (auto& entity : entities)
@@ -247,14 +248,14 @@ int main( int argc, char * argv[])
 					entity.GetTransform().GetModelMatrix()
 				)));
 
-				glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"), 
+				glUniform1ui(glGetUniformLocation(window->GetMeshProgram().GetID(), "texSample"),
 					static_cast<GLuint>(renderer.GetTextures().size()));
 				glUniform1i(glGetUniformLocation(window->GetMeshProgram().GetID(), "tex"), 0);
 
 				renderer.Draw(window->GetMeshProgram());
 			}
 		}
-		
+
 		glUniform1ui(usedLightCount, static_cast<GLuint>(lights.size()));
 		glUniform1ui(usedLightMeshCount, static_cast<GLuint>(lights.size()));
 
@@ -262,7 +263,7 @@ int main( int argc, char * argv[])
 		if (!lights.empty())
 		{
 			window->GetLightProgram().Use();
-			
+
 			// Calcul position des lights;
 			for (size_t i = 0; i < lights.size(); ++i)
 			{
@@ -270,7 +271,7 @@ int main( int argc, char * argv[])
 				float yorx = cos(currentFrame / 2.0f) * 0.5f * meshSize;
 				float zory = sin(currentFrame * 2.0f) * 0.5f * meshSize;
 
-				if (i % 2 == 0) 
+				if (i % 2 == 0)
 				{
 					lights[i].position.x = xorz;
 					lights[i].position.y = yorx;
@@ -282,15 +283,15 @@ int main( int argc, char * argv[])
 					lights[i].position.x = yorx;
 					lights[i].position.y = zory;
 				}
-				
+
 				glm::vec4 lightPosition = window->camera.GetViewMatrix() * glm::vec4(lights[i].position, 1.0f);
 				lights[i].position = glm::vec3(lightPosition) / lightPosition.w;
-				
+
 				glUniform3fv(lights[i].parameters.position, 1, glm::value_ptr(lights[i].position));
 				glUniform3fv(lights[i].parameters.ambiant, 1, glm::value_ptr(lights[i].ambiant));
 				glUniform3fv(lights[i].parameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
 				glUniform3fv(lights[i].parameters.specular, 1, glm::value_ptr(lights[i].specular));
-									  
+
 				glUniform3fv(lights[i].meshParameters.position, 1, glm::value_ptr(lights[i].position));
 				glUniform3fv(lights[i].meshParameters.diffuse, 1, glm::value_ptr(lights[i].diffuse));
 

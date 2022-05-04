@@ -4,7 +4,6 @@
 #include <glm/ext.hpp>
 
 #include "GameEntity.h"
-#include <cereal/types/base_class.hpp>
 
 namespace Engine
 {
@@ -40,14 +39,6 @@ namespace Engine
 		void SetViewMatrix();
 
 	public:
-		
-		template<class Archive>
-		void serialize(Archive& archive)
-		{
-			archive(cereal::base_class<GameEntity>(this), 
-				/*m_ProjectionMatrix, m_ViewMatrix, */fov, nearClip, farClip, yaw, pitch, speed, sensitivity);
-		}
-
 		Camera& operator =(const Camera& camera) = default;
 	};
 }
